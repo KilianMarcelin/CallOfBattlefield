@@ -4,9 +4,10 @@ using UnityEngine;
 public class PlayerScript : NetworkBehaviour
 {
     public Rigidbody rb;
-
+    public float speed = 4f;
     public float jumpForce = .3f;
-
+    public Animator animator;
+    
     [SyncVar]
     public float health = 100f;
 
@@ -47,8 +48,17 @@ public class PlayerScript : NetworkBehaviour
             return;
         }
 
-        float moveX = Input.GetAxis("Horizontal") * Time.deltaTime * 4f;
-        float moveZ = Input.GetAxis("Vertical") * Time.deltaTime * 4f;
+        float moveX = Input.GetAxis("Horizontal") * Time.deltaTime * speed;
+        float moveZ = Input.GetAxis("Vertical");
+        
+        if (moveZ < 0)
+        {
+            moveZ *= .5f;
+        }
+        moveZ *= Time.deltaTime *speed;
+        
+        animator.SetFloat("forward", Input.GetAxis("Vertical"));
+        animator.SetFloat("left", -Input.GetAxis("Horizontal"));
 
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");

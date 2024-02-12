@@ -68,11 +68,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9d0e79dc737452089f8179700452b6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncDirection: 0
+  syncDirection: 1
   syncMode: 0
   syncInterval: 0
   rb: {fileID: 7347310637726251328}
+  speed: 4
   jumpForce: 5
+  animator: {fileID: 5860311251689149474}
   health: 100
 --- !u!136 &6187479049647306530
 CapsuleCollider:
@@ -264,7 +266,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6743414598321645943}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
+  m_Avatar: {fileID: 9000000, guid: eecdfbd8513bc7e49934e23dcb21ce6e, type: 3}
   m_Controller: {fileID: 9100000, guid: 7be4c1d3a127daf499ab8ae4f86bf534, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
@@ -287,7 +289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f6f3bf89aa97405989c802ba270f815, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncDirection: 0
+  syncDirection: 1
   syncMode: 0
   syncInterval: 0
   clientAuthority: 0
