@@ -30,6 +30,13 @@ public class Hero : NetworkBehaviour {
     private void Start () {
         if (!isLocalPlayer) return;
         
+        Debug.Log("Hero is Local Player");
+        Debug.Log("Hero is Local Player");
+        Debug.Log("Hero is Local Player");
+        Debug.Log("Hero is Local Player");
+        
+        
+        
         /* a few apllication settings for more smooth. This is Optional. */
         // QualitySettings.vSyncCount = 0;
         Cursor.lockState = CursorLockMode.Locked;
