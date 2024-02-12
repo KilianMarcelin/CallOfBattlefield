@@ -172,7 +172,7 @@ MonoBehaviour:
   runInBackground: 1
   headlessStartMode: 1
   editorAutoStart: 0
-  sendRate: 60
+  sendRate: 128
   autoStartServerBuild: 0
   autoConnectClientBuild: 0
   offlineScene: Assets/Scenes/TestScene.unity
@@ -183,7 +183,7 @@ MonoBehaviour:
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 1807461413602009159, guid: dec06b7a15916437297e6e8968a07e4f,
+  playerPrefab: {fileID: 5860311252121169564, guid: 7e917efd4585b1f4fa8a1e999b9c4497,
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 1
