@@ -10,4 +10,5 @@ public class Weapon : ScriptableObject
     public float fireRate = 15f;
     public float impactForce = 30f;
     public GameObject weaponModel;
+    public bool fullAuto = true;
 }

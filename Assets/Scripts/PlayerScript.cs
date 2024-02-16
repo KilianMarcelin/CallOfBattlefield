@@ -11,12 +11,14 @@ public class PlayerScript : NetworkBehaviour
     public Animator animator;
     public GameObject arms;
     public GameObject body;
-    public GameObject gunSlot;
+    public GameObject gunSlotFP;
+    public GameObject gunSlotTP;
     public SphereCollider groundCollider;
     public WeaponBehaviour weaponBehaviour;
+    public ParticleSystem shootFX;
     public float respawnTime = 5;
 
-    public int currentWeapon = 0;
+    [SyncVar] public int currentWeapon = 0;
     public Weapon[] weapons;
         
     [SyncVar]
@@ -25,7 +27,6 @@ public class PlayerScript : NetworkBehaviour
     [SyncVar] public bool isDed = false;
     [SyncVar] public float health = 100f;
 
-    private bool hasJumped = false;
     private bool isInAir = false;
 
     private float verticalAngle = 0.0f;
@@ -88,29 +89,39 @@ public class PlayerScript : NetworkBehaviour
     [Client]
     public void ClientSpawn()
     {
+        shootFX.transform.SetParent(null);
         if (isOwned)
         {
             animator.gameObject.SetActive(false);
             arms.SetActive(true);
 
             Camera.main.transform.SetParent(transform);
-            Camera.main.transform.localPosition = new Vector3(0, 1.7f, 0);
+            Camera.main.transform.localPosition = new Vector3(0, 1.5f, 0);
             arms.transform.SetParent(Camera.main.transform);
             arms.transform.localPosition = new Vector3(0, -1.65f, 0.11f);
 
-            name = "LocalPlayer" + Random.Range(1, 1000);
+            name = "LocalPlayer" + Random.Range(1, 10000);
 
             // Lock cursor
             Cursor.lockState = CursorLockMode.Locked;
 
-            ChangeWeapon(0);
+            CmdCallChangeWeapon(0);
+            
+            PlayerScript[] players = FindObjectsOfType<PlayerScript>();
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (players[i] != this)
+                {
+                    players[i].ClientChangeWeapon(players[i].currentWeapon);
+                }
+            }
         }
         else
         {
             body.SetActive(true);
         }
     }
-    
+
     [Server]
     public void ServerSpawn()
     {
@@ -141,18 +152,49 @@ public class PlayerScript : NetworkBehaviour
         isInAir = true;
     }
 
-    public void ChangeWeapon(int index)
+    [Command]
+    public void CmdCallChangeWeapon(int index)
     {
-        if (index < 0 || index >= weapons.Length) return;
+        ServerChangeWeapon(index);
+    }
+    
+    [Server]
+    public void ServerChangeWeapon(int index)
+    {
         currentWeapon = index;
+        RpcCallClientChangeWeapon(index);
+    }
+    
+    [ClientRpc]
+    public void RpcCallClientChangeWeapon(int index)
+    {
+        ClientChangeWeapon(index);
+    }
+    
+    [Client]
+    public void ClientChangeWeapon(int index)
+    {
+        
+        Debug.Log("Changed weapon to " + index);
         // Remove all childs
-        foreach (Transform child in gunSlot.transform)
+        foreach (Transform child in gunSlotFP.transform)
         {
             Destroy(child.gameObject);
         }
+        foreach (Transform child in gunSlotTP.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        
         // Add new weapon
-        GameObject weapon = Instantiate(weapons[currentWeapon].weaponModel, gunSlot.transform);
-        weaponBehaviour = weapon.AddComponent<WeaponBehaviour>();
+        GameObject weapon = Instantiate(weapons[index].weaponModel);
+        if (!isOwned) weapon.transform.SetParent(gunSlotTP.transform);
+        else weapon.transform.SetParent(gunSlotFP.transform);
+        
+        weapon.transform.localPosition = Vector3.zero;
+        weapon.transform.localEulerAngles = Vector3.zero;
+        
+        weaponBehaviour = weapon.GetComponent<WeaponBehaviour>();
     }
     
     void Update()
@@ -199,7 +241,7 @@ public class PlayerScript : NetworkBehaviour
             if (Input.GetButton("Power word kill"))
             {
                 Debug.Log("You should kill yourself, NOW!");
-                CmdCallServerHit(1000f);
+                CmdCallServerHit(100000f);
             }
         }
 
@@ -224,6 +266,8 @@ public class PlayerScript : NetworkBehaviour
     public void CmdShoot(Vector3 origin, Vector3 direction)
     {
         if (timeUntilShoot > 0) return;
+
+        RpcPlayShootAnim();
         
         timeUntilShoot = 1/weapons[currentWeapon].fireRate;
         RaycastHit hit;
@@ -235,5 +279,14 @@ public class PlayerScript : NetworkBehaviour
                 player.ServerHit(10f);
             }
         }
+    }
+    
+    [ClientRpc]
+    public void RpcPlayShootAnim()
+    {
+        //animator.SetTrigger("shoot");
+        shootFX.transform.position = weaponBehaviour.fxSlot.transform.position;
+        shootFX.time = 0.0f;
+        shootFX.Play();
     }
 }
