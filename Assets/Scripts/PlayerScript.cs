@@ -1,5 +1,7 @@
-﻿using Mirror;
+﻿using System;
+using Mirror;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class PlayerScript : NetworkBehaviour
 {
@@ -8,10 +10,12 @@ public class PlayerScript : NetworkBehaviour
     public float jumpForce = .3f;
     public Animator animator;
     public GameObject sourceObject;
+    public SphereCollider groundCollider;
 
     [SyncVar] public float health = 100f;
 
     private bool hasJumped = false;
+    private bool isInAir = false;
 
     private float verticalAngle = 0.0f;
 
@@ -41,9 +45,14 @@ public class PlayerScript : NetworkBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    public bool IsGrounded()
+    private void OnTriggerEnter(Collider other)
     {
-        return Physics.Raycast(transform.position, Vector3.down, 1.02f);
+        isInAir = false;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        isInAir = true;
     }
 
     void Update()
@@ -81,15 +90,10 @@ public class PlayerScript : NetworkBehaviour
 
         Camera.main.transform.localRotation = Quaternion.AngleAxis(verticalAngle, Vector3.left);
         transform.Rotate(0, mouseX, 0);
-
-        if (Input.GetButton("Jump") && !hasJumped)
+        
+        if (!isInAir && Input.GetButtonDown("Jump"))
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            hasJumped = true;
-        }
-        else if (IsGrounded())
-        {
-            hasJumped = false;
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
         }
 
         if (Input.GetButton("Fire1"))
