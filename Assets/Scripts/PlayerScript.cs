@@ -9,6 +9,7 @@ public class PlayerScript : NetworkBehaviour
     public float speed = 4f;
     public float jumpForce = .3f;
     public Animator animator;
+    public Collider playerCollider;
     public SphereCollider groundCollider;
 
     public GameObject arms;
@@ -22,6 +23,9 @@ public class PlayerScript : NetworkBehaviour
     public GameObject gunSlotTP;
     public WeaponBehaviour weaponBehaviour;
     public ParticleSystem shootFX;
+    public GameObject hitParticleFX;
+    public GameObject bloodParticleFX;
+    public Light shootLight;
     public float swayOffsetRate = 0.1f;
     public float swayStrength = 0.1f;
     public float breathSpeed = 1.0f;
@@ -86,6 +90,10 @@ public class PlayerScript : NetworkBehaviour
     [Client]
     public void ClientDie()
     {
+        // Fix because sync var doesn't seem to work.
+        isDed = true;
+        rb.useGravity = false;
+        playerCollider.enabled = false;
         if (isOwned)
         {
             arms.SetActive(false);
@@ -100,6 +108,9 @@ public class PlayerScript : NetworkBehaviour
     public void ServerDie()
     {
         isDed = true;
+        // Fix because sync var doesn't seem to work.
+        rb.useGravity = false;
+        playerCollider.enabled = false;
         timeUntilRespawn = respawnTime;
     }
 
@@ -112,7 +123,11 @@ public class PlayerScript : NetworkBehaviour
     [Client]
     public void ClientSpawn()
     {
-        shootFX.transform.SetParent(null);
+        // Fix because sync var doesn't seem to work.
+        isDed = false;
+        rb.useGravity = true;
+        playerCollider.enabled = true;
+        transform.position = NetworkManager.singleton.GetStartPosition().position;
         if (isOwned)
         {
             arms.SetActive(true);
@@ -160,7 +175,10 @@ public class PlayerScript : NetworkBehaviour
     [Server]
     public void ServerSpawn()
     {
+        // Fix because sync var doesn't seem to work.
         isDed = false;
+        rb.useGravity = true;
+        playerCollider.enabled = true;
         transform.position = NetworkManager.singleton.GetStartPosition().position;
         health = 100f;
     }
@@ -238,7 +256,10 @@ public class PlayerScript : NetworkBehaviour
 
         // Add new weapon
         GameObject weapon = Instantiate(weapons[index].weaponModel);
-        if (!isOwned) weapon.transform.SetParent(gunSlotTP.transform);
+        if (!isOwned)
+        {
+            weapon.transform.SetParent(gunSlotTP.transform);
+        }
         else
         {
             weapon.transform.SetParent(gunSlotFP.transform);
@@ -249,10 +270,12 @@ public class PlayerScript : NetworkBehaviour
         weapon.transform.localEulerAngles = Vector3.zero;
 
         weaponBehaviour = weapon.GetComponent<WeaponBehaviour>();
+        shootFX.transform.SetParent(weaponBehaviour.fxSlot.transform);
     }
 
     void Update()
     {
+        Debug.Log(isDed);
         if (isOwned && !isDed)
         {
             // Movement
@@ -278,7 +301,7 @@ public class PlayerScript : NetworkBehaviour
             arms.transform.localPosition = originalAmrsPos + new Vector3(swayOffset.x, swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
 
             // Camera rotation
-            transform.Rotate(0, moveX, 0);
+            //transform.Rotate(0, moveX, 0);
             transform.Translate(moveX, 0, moveZ);
 
             // Clamping
@@ -349,22 +372,53 @@ public class PlayerScript : NetworkBehaviour
 
         timeUntilShoot = 1 / weapons[currentWeapon].fireRate;
         RaycastHit hit;
+        //RpcDebugShowHitTrace(origin, direction, 100f);
         if (Physics.Raycast(origin, direction, out hit, 100f))
         {
             PlayerScript player = hit.transform.GetComponent<PlayerScript>();
-            if (player != null)
+            if (player != null && player != this)
             {
-                player.ServerHit(10f);
+                player.ServerHit(weapons[currentWeapon].damage);
+                RpcPlayHitFXBlood(hit.point);
+            }
+            else
+            {
+                RpcPlayHitFXHit(hit.point + hit.normal * 0.1f);
             }
         }
+    }
+
+    [ClientRpc]
+    void RpcPlayHitFXBlood(Vector3 position)
+    {
+        Instantiate(bloodParticleFX, position, Quaternion.identity);
+    }
+    
+    [ClientRpc]
+    void RpcPlayHitFXHit(Vector3 position)
+    {
+        Instantiate(hitParticleFX, position, Quaternion.identity);
+    }
+
+    [ClientRpc]
+    void RpcDebugShowHitTrace(Vector3 origin, Vector3 direction, float distance)
+    {
+        Debug.DrawLine(origin, origin + direction * distance, Color.red, 1f);
     }
 
     [ClientRpc]
     public void RpcPlayShootAnim()
     {
         //animator.SetTrigger("shoot");
+        shootLight.enabled = true;
         shootFX.transform.position = weaponBehaviour.fxSlot.transform.position;
         shootFX.time = 0.0f;
         shootFX.Play();
+        Invoke(nameof(TurnOffLight), 0.02f);
+    }
+
+    public void TurnOffLight()
+    {
+        shootLight.enabled = false;
     }
 }
