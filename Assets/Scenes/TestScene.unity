@@ -802,8 +802,7 @@ MonoBehaviour:
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs:
-  - {fileID: 5860311252121169564, guid: 7e917efd4585b1f4fa8a1e999b9c4497, type: 3}
+  spawnPrefabs: []
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -860,7 +859,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 726100879}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &726100881
 Camera:
   m_ObjectHideFlags: 0
@@ -884,9 +883,9 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.1
   far clip plane: 1000
-  field of view: 60
+  field of view: 90
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
