@@ -19,7 +19,7 @@ QualitySettings:
     shadowCascade4Split: {x: 0.06666667, y: 0.2, z: 0.46666667}
     shadowmaskMode: 0
     skinWeights: 2
-    textureQuality: 0
+    textureQuality: 1
     anisotropicTextures: 0
     antiAliasing: 0
     softParticles: 0
@@ -42,9 +42,7 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     customRenderPipeline: {fileID: 11400000, guid: d0e2fc18fe036412f8223b3b3d9ad574,
       type: 2}
-    excludedTargetPlatforms:
-    - Server
-    - Standalone
+    excludedTargetPlatforms: []
   - serializedVersion: 2
     name: Balanced
     pixelLightCount: 1
@@ -81,9 +79,7 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     customRenderPipeline: {fileID: 11400000, guid: e1260c1148f6143b28bae5ace5e9c5d1,
       type: 2}
-    excludedTargetPlatforms:
-    - Standalone
-    - Server
+    excludedTargetPlatforms: []
   - serializedVersion: 2
     name: High Fidelity
     pixelLightCount: 2
@@ -99,7 +95,7 @@ QualitySettings:
     skinWeights: 255
     textureQuality: 0
     anisotropicTextures: 2
-    antiAliasing: 4
+    antiAliasing: 0
     softParticles: 0
     softVegetation: 1
     realtimeReflectionProbes: 1

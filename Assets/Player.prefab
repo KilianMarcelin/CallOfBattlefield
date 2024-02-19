@@ -368,7 +368,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   rb: {fileID: 7347310637726251328}
-  speed: 9
+  speed: 7
   jumpForce: 5
   animator: {fileID: 5860311251689149474}
   groundCollider: {fileID: 7222275825855497986}
@@ -387,6 +387,9 @@ MonoBehaviour:
   breathSpeed: 1
   breathStrength: 0.2
   recoilAmount: 0.3
+  unzoomedFOV: 90
+  zoomedFOV: 30
+  zoomRate: 0.3
   respawnTime: 5
   isDed: 0
   health: 100
@@ -422,7 +425,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &2824487776649738286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -502,7 +505,7 @@ SphereCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.05
+  m_Radius: 0.2
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8410536188334887570
 GameObject:
