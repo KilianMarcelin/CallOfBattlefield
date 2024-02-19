@@ -27,6 +27,9 @@ public class PlayerScript : NetworkBehaviour
     public float breathSpeed = 1.0f;
     public float breathStrength = 0.1f;
     public float recoilAmount = 0.1f;
+    public float unzoomedFOV = 90.0f;
+    public float zoomedFOV = 30.0f;
+    public float zoomRate = 0.3f;
     private float recoil = 0.0f;
     private Vector2 swayOffset = Vector2.zero;
     private Vector3 originalAmrsPos;
@@ -244,15 +247,18 @@ public class PlayerScript : NetworkBehaviour
     {
         if (isOwned && !isDed)
         {
+            // Movement
             float moveX = Input.GetAxis("Horizontal");
             float moveZ = Input.GetAxis("Vertical");
 
             moveX *= Time.deltaTime * speed;
             moveZ *= Time.deltaTime * speed;
 
+            // Update animator
             animator.SetFloat("forward", Input.GetAxis("Vertical"));
             animator.SetFloat("left", -Input.GetAxis("Horizontal"));
 
+            // Mouse input
             float mouseX = Input.GetAxis("Mouse X");
             float mouseY = Input.GetAxis("Mouse Y");
 
@@ -263,24 +269,29 @@ public class PlayerScript : NetworkBehaviour
             recoil = Mathf.Lerp(recoil, 0, 0.1f);
             arms.transform.localPosition = originalAmrsPos + new Vector3(swayOffset.x, swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
 
+            // Camera rotation
             transform.Rotate(0, moveX, 0);
             transform.Translate(moveX, 0, moveZ);
 
-
+            // Clamping
             verticalAngle += mouseY;
             if (verticalAngle < -90f) verticalAngle = -90f;
             else if (verticalAngle > 90f) verticalAngle = 90f;
 
+            // Update aim anim
             animator.SetFloat("aim", verticalAngle / 90f);
 
+            // Camera rotation 2
             mainCamera.transform.localRotation = Quaternion.AngleAxis(verticalAngle, Vector3.left);
             transform.Rotate(0, mouseX, 0);
 
+            // Jumping
             if (!isInAir && Input.GetButtonDown("Jump"))
             {
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
             }
 
+            // Shooting
             if (timeUntilShoot <= 0 && Input.GetButton("Fire1"))
             {
                 Vector3 origin = mainCamera.transform.position;
@@ -289,6 +300,14 @@ public class PlayerScript : NetworkBehaviour
                 recoil += recoilAmount;
             }
 
+            if (Input.GetButton("Fire2"))
+            {
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, zoomRate);
+            } else {
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, zoomRate);
+            } 
+
+            // kill
             if (Input.GetButton("Power word kill"))
             {
                 Debug.Log("You should kill yourself, NOW!");
