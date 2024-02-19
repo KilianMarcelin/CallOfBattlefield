@@ -43,7 +43,15 @@ public class PlayerScript : NetworkBehaviour
 
     [SyncVar] private float timeUntilShoot = 0;
 
-    private bool isInAir = false;
+    private int isInAir_count = 0;
+
+    private bool isInAir
+    {
+        get
+        {
+            return isInAir_count <= 0;
+        }
+    }
 
     private float verticalAngle = 0.0f;
 
@@ -171,12 +179,12 @@ public class PlayerScript : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        isInAir = false;
+        isInAir_count += 1;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        isInAir = true;
+        isInAir_count -= 1;
     }
 
     [Command]
