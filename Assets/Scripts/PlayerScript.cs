@@ -9,15 +9,57 @@ public class PlayerScript : NetworkBehaviour
     public float speed = 4f;
     public float jumpForce = .3f;
     public Animator animator;
-    public GameObject sourceObject;
     public SphereCollider groundCollider;
 
+    public GameObject arms;
+    public GameObject body;
+
+    public Camera mainCamera;
+    public Camera armsCamera;
+    public String armsLayer;
+    public String hiddenLayer;
+    public GameObject gunSlotFP;
+    public GameObject gunSlotTP;
+    public WeaponBehaviour weaponBehaviour;
+    public ParticleSystem shootFX;
+    public float swayOffsetRate = 0.1f;
+    public float swayStrength = 0.1f;
+    public float breathSpeed = 1.0f;
+    public float breathStrength = 0.1f;
+    public float recoilAmount = 0.1f;
+    public float unzoomedFOV = 90.0f;
+    public float zoomedFOV = 30.0f;
+    public float zoomRate = 0.3f;
+    private float recoil = 0.0f;
+    private Vector2 swayOffset = Vector2.zero;
+    private Vector3 originalAmrsPos;
+
+    public float respawnTime = 5;
+    [SyncVar] public bool isDed = false;
     [SyncVar] public float health = 100f;
 
-    private bool hasJumped = false;
+    [SyncVar] public int currentWeapon = 0;
+    public Weapon[] weapons;
+
+    [SyncVar] private float timeUntilShoot = 0;
+
     private bool isInAir = false;
 
     private float verticalAngle = 0.0f;
+
+    [SyncVar] private float timeUntilRespawn = 0;
+
+    public override void OnStartAuthority()
+    {
+        ClientSpawn();
+        CmdCallServerSpawn();
+    }
+
+    [Command]
+    public void CmdCallServerHit(float damage)
+    {
+        ServerHit(damage);
+    }
 
     [Server]
     public void ServerHit(float damage)
@@ -27,22 +69,104 @@ public class PlayerScript : NetworkBehaviour
 
         if (health <= 0)
         {
+            ServerDie();
+            RpcCallClientDie();
         }
     }
 
-    public override void OnStartAuthority()
+
+    [Client]
+    public void ClientDie()
     {
-        Camera.main.transform.SetParent(transform);
-        Camera.main.transform.localPosition = new Vector3(0, 1.7f, 0);
+        if (isOwned)
+        {
+            arms.SetActive(false);
+        }
+        else
+        {
+            body.SetActive(false);
+        }
+    }
 
-        // aim
-        sourceObject.transform.SetParent(Camera.main.transform);
-        sourceObject.transform.localPosition = new Vector3(0, 0, 20);
+    [Server]
+    public void ServerDie()
+    {
+        isDed = true;
+        timeUntilRespawn = respawnTime;
+    }
 
-        name = "LocalPlayer" + Random.Range(1, 1000);
+    [ClientRpc]
+    public void RpcCallClientDie()
+    {
+        ClientDie();
+    }
 
-        // Lock cursor
-        Cursor.lockState = CursorLockMode.Locked;
+    [Client]
+    public void ClientSpawn()
+    {
+        shootFX.transform.SetParent(null);
+        if (isOwned)
+        {
+            arms.SetActive(true);
+            
+            // Set main camera
+            mainCamera.gameObject.tag = "MainCamera";
+            mainCamera.gameObject.SetActive(true);
+
+            // Camera.main.transform.SetParent(transform);
+            // Camera.main.transform.localPosition = new Vector3(0, 1.5f, 0);
+            // Camera.main.cullingMask &= ~(1 << LayerMask.NameToLayer("ArmsLayer"));
+            // armsCamera.transform.SetParent(Camera.main.transform);
+            // armsCamera.transform.localPosition = Vector3.zero;
+            // arms.transform.SetParent(Camera.main.transform);
+            // arms.transform.localPosition = new Vector3(0, -1.65f, 0.11f);
+
+            name = "LocalPlayer" + Random.Range(1, 10000);
+
+            // Lock cursor
+            Cursor.lockState = CursorLockMode.Locked;
+
+            CmdCallChangeWeapon(0);
+
+            PlayerScript[] players = FindObjectsOfType<PlayerScript>();
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (players[i] != this)
+                {
+                    players[i].ClientChangeWeapon(players[i].currentWeapon);
+                }
+            }
+            
+            SetGameLayerRecursive(shootFX.gameObject, LayerMask.NameToLayer("ArmsLayer"));
+
+            originalAmrsPos = arms.transform.localPosition;
+            
+            SetGameLayerRecursive(body.gameObject, LayerMask.NameToLayer(hiddenLayer));
+        }
+        else
+        {
+            body.SetActive(true);
+        }
+    }
+
+    [Server]
+    public void ServerSpawn()
+    {
+        isDed = false;
+        transform.position = NetworkManager.singleton.GetStartPosition().position;
+        health = 100f;
+    }
+
+    [ClientRpc]
+    public void RpcCallClientSpawn()
+    {
+        ClientSpawn();
+    }
+
+    [Command]
+    public void CmdCallServerSpawn()
+    {
+        ServerSpawn();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -55,59 +179,167 @@ public class PlayerScript : NetworkBehaviour
         isInAir = true;
     }
 
+    [Command]
+    public void CmdCallChangeWeapon(int index)
+    {
+        ServerChangeWeapon(index);
+    }
+
+    [Server]
+    public void ServerChangeWeapon(int index)
+    {
+        currentWeapon = index;
+        RpcCallClientChangeWeapon(index);
+    }
+
+    [ClientRpc]
+    public void RpcCallClientChangeWeapon(int index)
+    {
+        ClientChangeWeapon(index);
+    }
+
+    private void SetGameLayerRecursive(GameObject _go, int _layer)
+    {
+        _go.layer = _layer;
+        foreach (Transform child in _go.transform)
+        {
+            child.gameObject.layer = _layer;
+     
+            Transform _HasChildren = child.GetComponentInChildren<Transform>();
+            if (_HasChildren != null)
+                SetGameLayerRecursive(child.gameObject, _layer);
+                 
+        }
+    }
+
+    
+    [Client]
+    public void ClientChangeWeapon(int index)
+    {
+        Debug.Log("Changed weapon to " + index);
+        // Remove all childs
+        foreach (Transform child in gunSlotFP.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        foreach (Transform child in gunSlotTP.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Add new weapon
+        GameObject weapon = Instantiate(weapons[index].weaponModel);
+        if (!isOwned) weapon.transform.SetParent(gunSlotTP.transform);
+        else
+        {
+            weapon.transform.SetParent(gunSlotFP.transform);
+            SetGameLayerRecursive(weapon, LayerMask.NameToLayer("ArmsLayer"));
+        }
+
+        weapon.transform.localPosition = Vector3.zero;
+        weapon.transform.localEulerAngles = Vector3.zero;
+
+        weaponBehaviour = weapon.GetComponent<WeaponBehaviour>();
+    }
+
     void Update()
     {
-        if (!isOwned)
+        if (isOwned && !isDed)
         {
-            return;
+            // Movement
+            float moveX = Input.GetAxis("Horizontal");
+            float moveZ = Input.GetAxis("Vertical");
+
+            moveX *= Time.deltaTime * speed;
+            moveZ *= Time.deltaTime * speed;
+
+            // Update animator
+            animator.SetFloat("forward", Input.GetAxis("Vertical"));
+            animator.SetFloat("left", -Input.GetAxis("Horizontal"));
+
+            // Mouse input
+            float mouseX = Input.GetAxis("Mouse X");
+            float mouseY = Input.GetAxis("Mouse Y");
+
+            // Procedural arms sway and other stuff
+            swayOffset.x = Mathf.Lerp(swayOffset.x, mouseX, swayOffsetRate);
+            swayOffset.y = Mathf.Lerp(swayOffset.y, mouseY, swayOffsetRate);
+            
+            recoil = Mathf.Lerp(recoil, 0, 0.1f);
+            arms.transform.localPosition = originalAmrsPos + new Vector3(swayOffset.x, swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
+
+            // Camera rotation
+            transform.Rotate(0, moveX, 0);
+            transform.Translate(moveX, 0, moveZ);
+
+            // Clamping
+            verticalAngle += mouseY;
+            if (verticalAngle < -90f) verticalAngle = -90f;
+            else if (verticalAngle > 90f) verticalAngle = 90f;
+
+            // Update aim anim
+            animator.SetFloat("aim", verticalAngle / 90f);
+
+            // Camera rotation 2
+            mainCamera.transform.localRotation = Quaternion.AngleAxis(verticalAngle, Vector3.left);
+            transform.Rotate(0, mouseX, 0);
+
+            // Jumping
+            if (!isInAir && Input.GetButtonDown("Jump"))
+            {
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+            }
+
+            // Shooting
+            if (timeUntilShoot <= 0 && Input.GetButton("Fire1"))
+            {
+                Vector3 origin = mainCamera.transform.position;
+                Vector3 direction = mainCamera.transform.forward;
+                CmdShoot(origin, direction);
+                recoil += recoilAmount;
+            }
+
+            if (Input.GetButton("Fire2"))
+            {
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, zoomRate);
+            } else {
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, zoomRate);
+            } 
+
+            // kill
+            if (Input.GetButton("Power word kill"))
+            {
+                Debug.Log("You should kill yourself, NOW!");
+                CmdCallServerHit(100000f);
+            }
         }
 
-        float moveX = Input.GetAxis("Horizontal") * Time.deltaTime * speed;
-        float moveZ = Input.GetAxis("Vertical");
-
-        if (moveZ < 0)
+        if (isServer)
         {
-            moveZ *= .5f;
-        }
+            if (timeUntilShoot > 0) timeUntilShoot -= Time.deltaTime;
 
-        moveZ *= Time.deltaTime * speed;
-
-        animator.SetFloat("forward", Input.GetAxis("Vertical"));
-        animator.SetFloat("left", -Input.GetAxis("Horizontal"));
-
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
-
-        transform.Rotate(0, moveX, 0);
-        transform.Translate(moveX, 0, moveZ);
-
-
-        verticalAngle += mouseY;
-        if (verticalAngle < -90f) verticalAngle = -90f;
-        else if (verticalAngle > 90f) verticalAngle = 90f;
-
-        animator.SetFloat("aim", verticalAngle / 90f);
-
-        Camera.main.transform.localRotation = Quaternion.AngleAxis(verticalAngle, Vector3.left);
-        transform.Rotate(0, mouseX, 0);
-        
-        if (!isInAir && Input.GetButtonDown("Jump"))
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
-        }
-
-        if (Input.GetButton("Fire1"))
-        {
-            Debug.Log("Shooting");
-            Vector3 origin = Camera.main.transform.position;
-            Vector3 direction = Camera.main.transform.forward;
-            CmdShoot(origin, direction);
+            // Respawning
+            if (isDed && timeUntilRespawn > 0)
+            {
+                timeUntilRespawn -= Time.deltaTime;
+                if (timeUntilRespawn <= 0)
+                {
+                    ServerSpawn();
+                    RpcCallClientSpawn();
+                }
+            }
         }
     }
 
     [Command]
     public void CmdShoot(Vector3 origin, Vector3 direction)
     {
+        if (timeUntilShoot > 0) return;
+
+        RpcPlayShootAnim();
+
+        timeUntilShoot = 1 / weapons[currentWeapon].fireRate;
         RaycastHit hit;
         if (Physics.Raycast(origin, direction, out hit, 100f))
         {
@@ -117,5 +349,14 @@ public class PlayerScript : NetworkBehaviour
                 player.ServerHit(10f);
             }
         }
+    }
+
+    [ClientRpc]
+    public void RpcPlayShootAnim()
+    {
+        //animator.SetTrigger("shoot");
+        shootFX.transform.position = weaponBehaviour.fxSlot.transform.position;
+        shootFX.time = 0.0f;
+        shootFX.Play();
     }
 }
