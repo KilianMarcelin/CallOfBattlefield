@@ -7,6 +7,7 @@ public class PlayerScript : NetworkBehaviour
 {
     public Rigidbody rb;
     public float speed = 4f;
+    public float airControl = 0.1f;
     public float jumpForce = .3f;
     public Animator animator;
     public Collider playerCollider;
@@ -14,7 +15,10 @@ public class PlayerScript : NetworkBehaviour
 
     public GameObject arms;
     public GameObject body;
-
+    
+    // Temp fix
+    public GameObject weaponModel;
+    
     public Camera mainCamera;
     public Camera armsCamera;
     public String armsLayer;
@@ -33,19 +37,24 @@ public class PlayerScript : NetworkBehaviour
     public float recoilAmount = 0.1f;
     public float unzoomedFOV = 90.0f;
     public float zoomedFOV = 30.0f;
+    public float unzoomed2ndCamFOV = 60.0f;
+    public float zoomed2ndCamFOV = 40.0f;
     public float zoomRate = 0.3f;
+    
     private float recoil = 0.0f;
+    public PlayerUI playerUI;
     private Vector2 swayOffset = Vector2.zero;
     private Vector3 originalAmrsPos;
 
     public float respawnTime = 5;
     [SyncVar] public bool isDed = false;
-    [SyncVar] public float health = 100f;
+    [SyncVar(hook = nameof(OnHealthChanged))] public float health = 100f;
 
     [SyncVar] public int currentWeapon = 0;
     public Weapon[] weapons;
 
     [SyncVar] private float timeUntilShoot = 0;
+    [SyncVar] private int ammoLeft = 0;
 
     private int isInAir_count = 0;
 
@@ -56,6 +65,8 @@ public class PlayerScript : NetworkBehaviour
             return isInAir_count <= 0;
         }
     }
+
+    private float moveX = 0, moveZ = 0;
 
     private float verticalAngle = 0.0f;
 
@@ -215,6 +226,7 @@ public class PlayerScript : NetworkBehaviour
     public void ServerChangeWeapon(int index)
     {
         currentWeapon = index;
+        ammoLeft = weapons[index].maxAmmo;
         RpcCallClientChangeWeapon(index);
     }
 
@@ -253,9 +265,11 @@ public class PlayerScript : NetworkBehaviour
         {
             Destroy(child.gameObject);
         }
+        
+        ammoLeft = weapons[index].maxAmmo;
 
         // Add new weapon
-        GameObject weapon = Instantiate(weapons[index].weaponModel);
+        GameObject weapon = Instantiate(weaponModel);
         if (!isOwned)
         {
             weapon.transform.SetParent(gunSlotTP.transform);
@@ -279,15 +293,25 @@ public class PlayerScript : NetworkBehaviour
         if (isOwned && !isDed)
         {
             // Movement
-            float moveX = Input.GetAxis("Horizontal");
-            float moveZ = Input.GetAxis("Vertical");
-
-            moveX *= Time.deltaTime * speed;
-            moveZ *= Time.deltaTime * speed;
+            if (!isInAir)
+            {
+                moveX = Input.GetAxis("Horizontal");
+                moveZ = Input.GetAxis("Vertical");
+            
+                moveX *= Time.deltaTime * speed;
+                moveZ *= Time.deltaTime * speed;
+            }
+            else
+            {
+                // Inertia
+                moveX += Input.GetAxis("Horizontal") * airControl * Time.deltaTime * speed;
+                moveZ += Input.GetAxis("Vertical") * airControl * Time.deltaTime * speed;
+            }
 
             // Update animator
             animator.SetFloat("forward", Input.GetAxis("Vertical"));
             animator.SetFloat("left", -Input.GetAxis("Horizontal"));
+            animator.SetBool("isInAir", isInAir);
 
             // Mouse input
             float mouseX = Input.GetAxis("Mouse X");
@@ -300,8 +324,7 @@ public class PlayerScript : NetworkBehaviour
             recoil = Mathf.Lerp(recoil, 0, 0.1f);
             arms.transform.localPosition = originalAmrsPos + new Vector3(swayOffset.x, swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
 
-            // Camera rotation
-            //transform.Rotate(0, moveX, 0);
+            
             transform.Translate(moveX, 0, moveZ);
 
             // Clamping
@@ -334,15 +357,17 @@ public class PlayerScript : NetworkBehaviour
             if (Input.GetButton("Fire2"))
             {
                 mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, zoomRate);
+                armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, zoomRate);
             } else {
                 mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, zoomRate);
+                armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, zoomRate);
             } 
 
             // kill
             if (Input.GetButton("Power word kill"))
             {
                 Debug.Log("You should kill yourself, NOW!");
-                CmdCallServerHit(100000f);
+                CmdCallServerHit(10f);
             }
         }
 
@@ -420,5 +445,14 @@ public class PlayerScript : NetworkBehaviour
     public void TurnOffLight()
     {
         shootLight.enabled = false;
+    }
+    
+    public void OnHealthChanged(float oldHealth, float newHealth)
+    {
+        Debug.Log("Health changed from " + oldHealth + " to " + newHealth);
+        if (isOwned)
+        {
+            playerUI.UpdateHealth(newHealth);
+        }
     }
 }
