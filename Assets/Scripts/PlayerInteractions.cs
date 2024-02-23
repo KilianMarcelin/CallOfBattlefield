@@ -9,14 +9,15 @@ public class PlayerInteractions : NetworkBehaviour
 {
     PlayerState playerState;
 
+    public LayerMask ignoreHit;
     public Camera mainCamera;
     public UnityEvent<Vector3, Vector3> OnClientShoot;
     public UnityEvent<Vector3, Vector3> OnServerShoot;
     public UnityEvent<Vector3> OnClientHitFX;
     public UnityEvent<Vector3> OnClientBloodFX;
-    
+
     [SyncVar] public bool canShoot = true;
-    
+
     [Server]
     public void ServerSetCanShoot(bool value)
     {
@@ -36,12 +37,9 @@ public class PlayerInteractions : NetworkBehaviour
             {
                 playerState.CmdKill();
             }
-            
-            if (canShoot && playerState.CanShoot() && Input.GetButton("Fire1"))
-            {
-                playerState.HasShooted();
 
-                Debug.Log("Shooting");
+            if (canShoot && Input.GetButton("Fire1"))
+            {
                 Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
                 CmdShoot(ray.origin, ray.direction);
             }
@@ -54,28 +52,59 @@ public class PlayerInteractions : NetworkBehaviour
         OnClientShoot.Invoke(origin, direction);
     }
 
+    [ClientRpc]
+    private void RpcInvokeClientBloodFX(Vector3 origin)
+    {
+        OnClientBloodFX.Invoke(origin);
+    }
+
+    [ClientRpc]
+    private void RpcInvokeClientHitFX(Vector3 origin)
+    {
+        OnClientHitFX.Invoke(origin);
+    }
+
     [Command]
     public void CmdShoot(Vector3 origin, Vector3 direction)
     {
+        // Better to check on the server
+        if (!playerState.CanShoot()) return;
+
+        playerState.HasShooted();
+
         OnServerShoot.Invoke(origin, direction);
         RpcInvokeOnClientShoot(origin, direction);
-        
+
         RaycastHit hit;
         //RpcDebugShowHitTrace(origin, direction, 100f);
-        if (Physics.Raycast(origin, direction, out hit, 100f))
+        if (Physics.Raycast(origin, direction, out hit, 100f, ignoreHit))
         {
-            PlayerScript player = hit.transform.GetComponent<PlayerScript>();
-            if (player != null && player != this)
+            Debug.Log(hit);
+            
+            PlayerState player = GetPlayerStateInParent(hit.transform);
+
+            if (player != null && player != playerState)
             {
-                player.ServerHit(playerState.GetCurrentWeapon().damage);
+                player.ServerDamage(playerState.GetCurrentWeapon().damage);
                 // RpcPlayHitFXBlood(hit.point);
-                OnClientBloodFX.Invoke(hit.point + hit.normal * 0.1f);
+                RpcInvokeClientBloodFX(hit.point + hit.normal * 0.1f);
             }
             else
             {
                 // RpcPlayHitFXHit(hit.point + hit.normal * 0.1f);
-                OnClientHitFX.Invoke(hit.point);
+                RpcInvokeClientHitFX(hit.point);
             }
         }
+    }
+
+    private PlayerState GetPlayerStateInParent(Transform go)
+    {
+        if (go == null) return null;
+
+        PlayerState ps = go.GetComponent<PlayerState>();
+
+        if (ps != null) return ps;
+
+        return GetPlayerStateInParent(go.transform.parent);
     }
 }

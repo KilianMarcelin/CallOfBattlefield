@@ -16,6 +16,9 @@ public class PlayerState : NetworkBehaviour
     [SyncVar] public float timeUntilReloadEnd = 0;
     [SyncVar] private float timeUntilRespawn = 0;
 
+    public Rigidbody rb;
+    public CapsuleCollider collider;
+
     public UnityEvent OnDeathServerCallbacks;
     public UnityEvent OnDeathClientCallbacks;
     public UnityEvent<float> OnHealthChangeServerCallbacks;
@@ -82,8 +85,8 @@ public class PlayerState : NetworkBehaviour
     {
         isDed = false;
         health = 100;
-        RpcRunRemote(nameof(ClientInvokeHealthCallbacks));
         RpcRunRemote(nameof(ClientInvokeRespawnCallbacks));
+        RpcRunClientInvokeHealthCallbacks(health);
         OnRespawnServerCallbacks.Invoke();
     }
     
@@ -129,6 +132,18 @@ public class PlayerState : NetworkBehaviour
     {
         Debug.Log("Client change weapon to " + weaponIndex);
         OnWeaponChangeClientCallbacks.Invoke(weapons[weaponIndex]);
+    }
+
+    [Server]
+    public void ServerSetCanCollide(bool canCollide)
+    {
+        collider.isTrigger = !canCollide;
+    }
+
+    [Server]
+    public void ServerSetGravityEnabled(bool gravityEnabled)
+    {
+        rb.useGravity = gravityEnabled;
     }
 
     private void Update()
