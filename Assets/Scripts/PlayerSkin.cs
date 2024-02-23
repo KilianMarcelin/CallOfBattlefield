@@ -96,9 +96,6 @@ public class PlayerSkin : NetworkBehaviour
             arms.transform.localPosition = originalAmrsPos + new Vector3(swayOffset.x,
                 swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
         }
-        else
-        {
-        }
     }
 
     // Not really necessary
@@ -153,6 +150,22 @@ public class PlayerSkin : NetworkBehaviour
         recoil += recoilAmount;
     }
 
+    [Client]
+    public void ClientPlayHitFX(Vector3 position)
+    {
+        GameObject hitFX = Instantiate(hitParticleFX);
+        hitFX.transform.position = position;
+        Destroy(hitFX, 1.0f);
+    }
+    
+    [Client]
+    public void ClientPlayBloodFX(Vector3 position)
+    {
+        GameObject bloodFX = Instantiate(bloodParticleFX);
+        bloodFX.transform.position = position;
+        Destroy(bloodFX, 1.0f);
+    }
+    
     public void TurnOffLight()
     {
         shootLight.enabled = false;

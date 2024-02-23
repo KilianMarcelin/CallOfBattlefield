@@ -11,7 +11,9 @@ public class PlayerInteractions : NetworkBehaviour
 
     public Camera mainCamera;
     public UnityEvent<Vector3, Vector3> OnClientShoot;
-    public UnityEvent<Vector3, Vector3> OnServerShoot; 
+    public UnityEvent<Vector3, Vector3> OnServerShoot;
+    public UnityEvent<Vector3> OnClientHitFX;
+    public UnityEvent<Vector3> OnClientBloodFX;
     
     [SyncVar] public bool canShoot = true;
     
@@ -67,10 +69,12 @@ public class PlayerInteractions : NetworkBehaviour
             {
                 player.ServerHit(playerState.GetCurrentWeapon().damage);
                 // RpcPlayHitFXBlood(hit.point);
+                OnClientBloodFX.Invoke(hit.point + hit.normal * 0.1f);
             }
             else
             {
                 // RpcPlayHitFXHit(hit.point + hit.normal * 0.1f);
+                OnClientHitFX.Invoke(hit.point);
             }
         }
     }
