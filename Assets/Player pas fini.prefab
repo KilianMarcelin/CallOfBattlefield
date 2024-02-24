@@ -549,12 +549,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b20dc110904e47f8a154cdcf6433eae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncDirection: 0
+  syncDirection: 1
   syncMode: 0
   syncInterval: 0
   target: {fileID: 5860311252121169561}
   syncPosition: 1
-  syncRotation: 0
+  syncRotation: 1
   syncScale: 0
   interpolatePosition: 1
   interpolateRotation: 1
@@ -565,7 +565,7 @@ MonoBehaviour:
   showGizmos: 0
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
-  onlySyncOnChange: 1
+  onlySyncOnChange: 0
   compressRotation: 1
   bufferResetMultiplier: 3
   positionSensitivity: 0.01
@@ -583,7 +583,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a553cb17010b2403e8523b558bffbc14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncDirection: 0
+  syncDirection: 1
   syncMode: 0
   syncInterval: 0
   target: {fileID: 5860311252121169561}
@@ -594,7 +594,7 @@ MonoBehaviour:
   interpolateRotation: 1
   interpolateScale: 1
   coordinateSpace: 0
-  sendIntervalMultiplier: 2
+  sendIntervalMultiplier: 1
   timelineOffset: 0
   showGizmos: 0
   showOverlay: 0
@@ -657,12 +657,15 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   rb: {fileID: 7347310637726251328}
-  speed: 7
+  runSpeed: 7
+  walkSpeed: 5
   jumpForce: 4
-  airControl: 0.02
+  movementControl: 0.1
+  airControl: 0
   animator: {fileID: 5860311251689149474}
   playerCollider: {fileID: 6557754431183414040}
   canMove: 1
+  isRunning: 0
 --- !u!114 &4543763686222107933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -777,18 +780,6 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1529174891565850974}
         m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
-        m_MethodName: ServerResetPosition
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1529174891565850974}
-        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
         m_MethodName: ServerSetCanMove
         m_Mode: 6
         m_Arguments:
@@ -838,6 +829,18 @@ MonoBehaviour:
   OnRespawnClientCallbacks:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1529174891565850974}
+        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+        m_MethodName: ClientResetPosition
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 4322662438837622270}
         m_TargetAssemblyTypeName: PlayerSkin, Assembly-CSharp
         m_MethodName: SpawnCallback
@@ -883,9 +886,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  ignoreHit:
+  includeHit:
     serializedVersion: 2
-    m_Bits: 257
+    m_Bits: 385
   mainCamera: {fileID: 573146033155733539}
   OnClientShoot:
     m_PersistentCalls:

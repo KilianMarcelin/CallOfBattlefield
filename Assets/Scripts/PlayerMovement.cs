@@ -7,28 +7,32 @@ using UnityEngine.Serialization;
 public class PlayerMovement : NetworkBehaviour
 {
     public Rigidbody rb;
-    [FormerlySerializedAs("speed")] public float runSpeed = 4f;
-    public float walkMult = 0.4f;
+    public float runSpeed = 7f;
+    public float walkSpeed = 5f;
     public float jumpForce = 4f;
+    public float movementControl = 0.1f;
     public float airControl = 0.02f;
     public Animator animator;
     public Collider playerCollider;
 
     [SyncVar] public bool canMove = true;
     [SyncVar] public bool isRunning = false;
+    private float inputX = 0, inputZ = 0;
     private float moveX = 0, moveZ = 0;
+    private float animatorInputX = 0, animatorInputZ = 0;
 
-    [SyncVar] private int isInAir_count = 0;
+    // [SyncVar] 
+    private int isInAir_count = 0;
 
     public bool isInAir
     {
         get { return isInAir_count <= 0; }
     }
 
-    [Server]
-    public void ServerResetPosition()
+    [Client]
+    public void ClientResetPosition()
     {
-        ServerSetPosition(NetworkManager.singleton.GetStartPosition().position);
+        transform.position = NetworkManager.singleton.GetStartPosition().position;
     }
 
     [Server]
@@ -37,15 +41,10 @@ public class PlayerMovement : NetworkBehaviour
         canMove = value;
     }
 
-    [Server]
-    public void ServerSetPosition(Vector3 position)
-    {
-        rb.useGravity = true;
-        playerCollider.enabled = true;
-        // transform.position = NetworkManager.singleton.GetStartPosition().position;
-        transform.position = position;
-    }
-
+    // Probably going to change this, server authoritative movement
+    // is more secure but client authoritative is more accurate and 
+    // less awful to control.
+    /*
     [Command]
     public void CmdTranslate(Vector3 translation)
     {
@@ -56,7 +55,7 @@ public class PlayerMovement : NetworkBehaviour
     public void CmdAddForce(Vector3 force, ForceMode mode)
     {
         rb.AddForce(force, mode);
-    }
+    }*/
 
     [Command]
     public void CmdSetIsRunning(bool value)
@@ -74,34 +73,31 @@ public class PlayerMovement : NetworkBehaviour
             bool localIsRunning = Input.GetButton("Run");
             CmdSetIsRunning(localIsRunning);
 
-            if (!isInAir)
-            {
-                moveX = Input.GetAxis("Horizontal") * (localIsRunning ? 1f : walkMult);
-                moveZ = Input.GetAxis("Vertical") * (localIsRunning ? 1f : walkMult);
+            float newInputX = Input.GetAxis("Horizontal");
+            float newInputZ = Input.GetAxis("Vertical");
 
-                moveX *= Time.deltaTime * runSpeed;
-                moveZ *= Time.deltaTime * runSpeed;
-            }
-            else
-            {
-                // Inertia
-                float newMoveX = Input.GetAxis("Horizontal") * Time.deltaTime * runSpeed;
-                float newMoveZ = Input.GetAxis("Vertical") * Time.deltaTime * runSpeed;
+            inputX = Mathf.Lerp(inputX, newInputX, isInAir ? airControl : movementControl);
+            inputZ = Mathf.Lerp(inputZ, newInputZ, isInAir ? airControl : movementControl);
 
-                moveX = Mathf.Lerp(moveX, newMoveX, airControl);
-                moveZ = Mathf.Lerp(moveZ, newMoveZ, airControl);
-            }
+            moveX = inputX * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed);
+            moveZ = inputZ * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed);
 
-            animator.SetFloat("forward", Input.GetAxis("Vertical") * (localIsRunning ? 1f : 0.5f));
-            animator.SetFloat("left", -Input.GetAxis("Horizontal") * (localIsRunning ? 1f : 0.5f));
+            // moveX = Mathf.Lerp(moveX, newMoveX, isInAir ? airControl : groundControl);
+            // moveZ = Mathf.Lerp(moveZ, newMoveZ, isInAir ? airControl : groundControl);
+
+            animatorInputX = Mathf.Lerp(animatorInputX, -inputX * (localIsRunning ? 1.5f : 1.0f), movementControl);
+            animatorInputZ = Mathf.Lerp(animatorInputZ, inputZ * (localIsRunning ? 1.5f : 1.0f), movementControl);
+            
+            animator.SetFloat("forward", animatorInputZ);
+            animator.SetFloat("left", animatorInputX);
             animator.SetBool("isInAir", isInAir);
 
-            CmdTranslate(new Vector3(moveX, 0, moveZ));
+            transform.Translate(new Vector3(moveX, 0, moveZ));
 
             // Jumping
             if (!isInAir && Input.GetButtonDown("Jump"))
             {
-                CmdAddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
             }
         }
     }

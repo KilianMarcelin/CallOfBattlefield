@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 949914679}
-  m_IndirectSpecularColor: {r: 0.21633741, g: 0.14952125, b: 0.12696585, a: 1}
+  m_IndirectSpecularColor: {r: 0.21619223, g: 0.14943443, b: 0.12692663, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -196,7 +196,7 @@ MonoBehaviour:
   runInBackground: 1
   headlessStartMode: 1
   editorAutoStart: 0
-  sendRate: 60
+  sendRate: 128
   autoStartServerBuild: 0
   autoConnectClientBuild: 0
   offlineScene: Assets/Scenes/Map.unity

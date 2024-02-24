@@ -2,6 +2,7 @@
 using Mirror;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 
 [RequireComponent(typeof(PlayerState))]
@@ -9,7 +10,7 @@ public class PlayerInteractions : NetworkBehaviour
 {
     PlayerState playerState;
 
-    public LayerMask ignoreHit;
+    [FormerlySerializedAs("ignoreHit")] public LayerMask includeHit;
     public Camera mainCamera;
     public UnityEvent<Vector3, Vector3> OnClientShoot;
     public UnityEvent<Vector3, Vector3> OnServerShoot;
@@ -75,25 +76,38 @@ public class PlayerInteractions : NetworkBehaviour
         OnServerShoot.Invoke(origin, direction);
         RpcInvokeOnClientShoot(origin, direction);
 
-        RaycastHit hit;
-        //RpcDebugShowHitTrace(origin, direction, 100f);
-        if (Physics.Raycast(origin, direction, out hit, 100f, ignoreHit))
+        RaycastHit[] hits;
+        hits = Physics.RaycastAll(origin, direction, 100f, includeHit);
+        
+        // Sort hits by distance
+        Array.Sort(hits, ((hit, raycastHit) =>
         {
-            Debug.Log(hit);
-            
+            return (int) (hit.distance - raycastHit.distance);
+        }));
+        
+        foreach (RaycastHit hit in hits)
+        {
+            Debug.Log(hit.distance);
             PlayerState player = GetPlayerStateInParent(hit.transform);
 
+            // If we hit a player and it isn't us
             if (player != null && player != playerState)
             {
                 player.ServerDamage(playerState.GetCurrentWeapon().damage);
                 // RpcPlayHitFXBlood(hit.point);
                 RpcInvokeClientBloodFX(hit.point + hit.normal * 0.1f);
+                break;
             }
-            else
+            
+            // If we didn't hit a player
+            if (player == null)
             {
                 // RpcPlayHitFXHit(hit.point + hit.normal * 0.1f);
                 RpcInvokeClientHitFX(hit.point);
+                break;
             }
+            
+            // we're here if we hit ourselves, so we get to the next hit
         }
     }
 
