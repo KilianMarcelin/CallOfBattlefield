@@ -1,51 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &460061815350791855
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2363191370285340464}
-  - component: {fileID: 6557754431183414040}
-  m_Layer: 2
-  m_Name: CapsuleCollider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2363191370285340464
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 460061815350791855}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5860311252121169561}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &6557754431183414040
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 460061815350791855}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &1015966284576834836
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,17 +420,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5860311252121169561}
+  - component: {fileID: 2377475353503233587}
   - component: {fileID: 5860311252121169562}
-  - component: {fileID: 7347310637726251328}
-  - component: {fileID: 2824487776649738286}
   - component: {fileID: 5047907730361637698}
-  - component: {fileID: 7222275825855497986}
   - component: {fileID: 4579237709754711134}
   - component: {fileID: 1529174891565850974}
   - component: {fileID: 4543763686222107933}
   - component: {fileID: 4444850381357696168}
   - component: {fileID: 4322662438837622270}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Player pas fini
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -495,7 +447,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2363191370285340464}
   - {fileID: 46901128351226166}
   - {fileID: 6259646646508155853}
   - {fileID: 1100619896870728227}
@@ -503,6 +454,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!143 &2377475353503233587
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5860311252121169564}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &5860311252121169562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -521,56 +490,6 @@ MonoBehaviour:
   serverOnly: 0
   visible: 0
   hasSpawned: 0
---- !u!54 &7347310637726251328
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5860311252121169564}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 1
---- !u!114 &2824487776649738286
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5860311252121169564}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b20dc110904e47f8a154cdcf6433eae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncDirection: 1
-  syncMode: 0
-  syncInterval: 0
-  target: {fileID: 5860311252121169561}
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
-  interpolatePosition: 1
-  interpolateRotation: 1
-  interpolateScale: 1
-  coordinateSpace: 0
-  sendIntervalMultiplier: 1
-  timelineOffset: 0
-  showGizmos: 0
-  showOverlay: 0
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
-  onlySyncOnChange: 0
-  compressRotation: 1
-  bufferResetMultiplier: 3
-  positionSensitivity: 0.01
-  rotationSensitivity: 0.01
-  scaleSensitivity: 0.01
 --- !u!114 &5047907730361637698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -605,19 +524,6 @@ MonoBehaviour:
   positionSensitivity: 0.01
   rotationSensitivity: 0.01
   scaleSensitivity: 0.01
---- !u!135 &7222275825855497986
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5860311252121169564}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.2
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4579237709754711134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -656,16 +562,16 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  rb: {fileID: 7347310637726251328}
+  cr: {fileID: 2377475353503233587}
   runSpeed: 7
   walkSpeed: 5
-  jumpForce: 4
+  jumpHeight: 4
   movementControl: 0.1
   airControl: 0
   animator: {fileID: 5860311251689149474}
-  playerCollider: {fileID: 6557754431183414040}
   canMove: 1
   isRunning: 0
+  velocityY: 0
 --- !u!114 &4543763686222107933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -689,8 +595,6 @@ MonoBehaviour:
   currentWeapon: 0
   timeUntilShoot: 0
   timeUntilReloadEnd: 0
-  rb: {fileID: 7347310637726251328}
-  collider: {fileID: 6557754431183414040}
   OnDeathServerCallbacks:
     m_PersistentCalls:
       m_Calls:
@@ -709,30 +613,6 @@ MonoBehaviour:
       - m_Target: {fileID: 4444850381357696168}
         m_TargetAssemblyTypeName: PlayerInteractions, Assembly-CSharp
         m_MethodName: ServerSetCanShoot
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 4543763686222107933}
-        m_TargetAssemblyTypeName: PlayerState, Assembly-CSharp
-        m_MethodName: ServerSetCanCollide
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 4543763686222107933}
-        m_TargetAssemblyTypeName: PlayerState, Assembly-CSharp
-        m_MethodName: ServerSetGravityEnabled
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -793,30 +673,6 @@ MonoBehaviour:
       - m_Target: {fileID: 4444850381357696168}
         m_TargetAssemblyTypeName: PlayerInteractions, Assembly-CSharp
         m_MethodName: ServerSetCanShoot
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 4543763686222107933}
-        m_TargetAssemblyTypeName: PlayerState, Assembly-CSharp
-        m_MethodName: ServerSetCanCollide
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 4543763686222107933}
-        m_TargetAssemblyTypeName: PlayerState, Assembly-CSharp
-        m_MethodName: ServerSetGravityEnabled
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

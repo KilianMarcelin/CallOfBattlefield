@@ -6,28 +6,21 @@ using UnityEngine.Serialization;
 
 public class PlayerMovement : NetworkBehaviour
 {
-    public Rigidbody rb;
+    public CharacterController cr;
     public float runSpeed = 7f;
     public float walkSpeed = 5f;
-    public float jumpForce = 4f;
+    public float jumpHeight = 4f;
     public float movementControl = 0.1f;
     public float airControl = 0.02f;
     public Animator animator;
-    public Collider playerCollider;
+    // public Collider playerCollider;
 
     [SyncVar] public bool canMove = true;
     [SyncVar] public bool isRunning = false;
     private float inputX = 0, inputZ = 0;
     private float moveX = 0, moveZ = 0;
+    public float velocityY = 0;
     private float animatorInputX = 0, animatorInputZ = 0;
-
-    // [SyncVar] 
-    private int isInAir_count = 0;
-
-    public bool isInAir
-    {
-        get { return isInAir_count <= 0; }
-    }
 
     [Client]
     public void ClientResetPosition()
@@ -76,8 +69,8 @@ public class PlayerMovement : NetworkBehaviour
             float newInputX = Input.GetAxis("Horizontal");
             float newInputZ = Input.GetAxis("Vertical");
 
-            inputX = Mathf.Lerp(inputX, newInputX, isInAir ? airControl : movementControl);
-            inputZ = Mathf.Lerp(inputZ, newInputZ, isInAir ? airControl : movementControl);
+            inputX = Mathf.Lerp(inputX, newInputX, cr.isGrounded ? movementControl : airControl);
+            inputZ = Mathf.Lerp(inputZ, newInputZ, cr.isGrounded ? movementControl : airControl);
 
             moveX = inputX * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed);
             moveZ = inputZ * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed);
@@ -90,26 +83,24 @@ public class PlayerMovement : NetworkBehaviour
             
             animator.SetFloat("forward", animatorInputZ);
             animator.SetFloat("left", animatorInputX);
-            animator.SetBool("isInAir", isInAir);
-
-            transform.Translate(new Vector3(moveX, 0, moveZ));
+            animator.SetBool("isInAir", !cr.isGrounded);
 
             // Jumping
-            if (!isInAir && Input.GetButtonDown("Jump"))
+            if (cr.isGrounded && Input.GetButtonDown("Jump"))
             {
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+                velocityY = jumpHeight;
+            } else if (cr.isGrounded)
+            {
+                velocityY = -1f;
             }
+            else
+            {
+                velocityY += Physics.gravity.y * Time.deltaTime;
+            }
+
+            Vector3 movement = new Vector3(moveX, velocityY * Time.deltaTime, moveZ);
+            movement = transform.rotation * movement;
+            cr.Move(movement);
         }
-    }
-
-    // Is grounded
-    private void OnTriggerEnter(Collider other)
-    {
-        isInAir_count += 1;
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        isInAir_count -= 1;
     }
 }

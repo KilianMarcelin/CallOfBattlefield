@@ -16,9 +16,6 @@ public class PlayerState : NetworkBehaviour
     [SyncVar] public float timeUntilReloadEnd = 0;
     [SyncVar] private float timeUntilRespawn = 0;
 
-    public Rigidbody rb;
-    public CapsuleCollider collider;
-
     public UnityEvent OnDeathServerCallbacks;
     public UnityEvent OnDeathClientCallbacks;
     public UnityEvent<float> OnHealthChangeServerCallbacks;
@@ -50,6 +47,8 @@ public class PlayerState : NetworkBehaviour
     [Server]
     public void ServerDamage(float damage)
     {
+        if (isDed) return;
+        
         health -= damage;
         // We need a rpc cause our Rpc call function can't take parameters.
         RpcRunClientInvokeHealthCallbacks(health);
@@ -134,6 +133,7 @@ public class PlayerState : NetworkBehaviour
         OnWeaponChangeClientCallbacks.Invoke(weapons[weaponIndex]);
     }
 
+    /*
     [Server]
     public void ServerSetCanCollide(bool canCollide)
     {
@@ -145,6 +145,7 @@ public class PlayerState : NetworkBehaviour
     {
         rb.useGravity = gravityEnabled;
     }
+    */
 
     private void Update()
     {
