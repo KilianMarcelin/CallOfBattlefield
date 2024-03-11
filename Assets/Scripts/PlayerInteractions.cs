@@ -18,6 +18,12 @@ public class PlayerInteractions : NetworkBehaviour
     public UnityEvent<Vector3> OnClientBloodFX;
 
     [SyncVar] public bool canShoot = true;
+    [SyncVar] public int ammoUsed = 0;
+    [SyncVar] public float timeUntilReload = 0;
+    [SyncVar] public bool reloading = false;
+
+    public UnityEvent<float> OnClientReload;
+    public UnityEvent OnClientReloadFinished;
 
     [Server]
     public void ServerSetCanShoot(bool value)
@@ -30,6 +36,26 @@ public class PlayerInteractions : NetworkBehaviour
         playerState = GetComponent<PlayerState>();
     }
 
+    [ClientRpc]
+    public void RpcClientPlayAnims(float reloadDuration)
+    {
+        OnClientReload.Invoke(reloadDuration);
+    }
+
+    [ClientRpc]
+    public void RpcClientFinishAnim()
+    {
+        OnClientReloadFinished.Invoke();
+    }
+
+    [Command]
+    public void CmdReload()
+    {
+        timeUntilReload = playerState.GetCurrentWeapon().reloadTime;
+        reloading = true;
+        RpcClientPlayAnims(playerState.GetCurrentWeapon().reloadTime);
+    }
+
     private void Update()
     {
         if (isOwned)
@@ -39,10 +65,29 @@ public class PlayerInteractions : NetworkBehaviour
                 playerState.CmdKill();
             }
 
-            if (canShoot && Input.GetButton("Fire1"))
+            if (!playerState.isDed && !reloading && ammoUsed > 0 && Input.GetButtonDown("Reload"))
+            {
+                CmdReload();
+            }
+
+            if (ammoUsed < playerState.GetCurrentWeapon().maxAmmo && !reloading && canShoot && Input.GetButton("Fire1"))
             {
                 Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
                 CmdShoot(ray.origin, ray.direction);
+            }
+        }
+
+        if (isServer)
+        {
+            if (reloading)
+            {
+                timeUntilReload -= Time.deltaTime;
+                if (timeUntilReload <= 0)
+                {
+                    ammoUsed = 0;
+                    reloading = false;
+                    RpcClientFinishAnim();
+                }
             }
         }
     }
@@ -72,6 +117,7 @@ public class PlayerInteractions : NetworkBehaviour
         if (!playerState.CanShoot()) return;
 
         playerState.HasShooted();
+        ammoUsed++;
 
         OnServerShoot.Invoke(origin, direction);
         RpcInvokeOnClientShoot(origin, direction);
@@ -87,12 +133,13 @@ public class PlayerInteractions : NetworkBehaviour
         
         foreach (RaycastHit hit in hits)
         {
-            Debug.Log(hit.distance);
             PlayerState player = GetPlayerStateInParent(hit.transform);
 
             // If we hit a player and it isn't us
             if (player != null && player != playerState)
             {
+                if (player.isDed) continue;
+                
                 player.ServerDamage(playerState.GetCurrentWeapon().damage);
                 // RpcPlayHitFXBlood(hit.point);
                 RpcInvokeClientBloodFX(hit.point + hit.normal * 0.1f);

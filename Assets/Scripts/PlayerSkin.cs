@@ -7,6 +7,8 @@ public class PlayerSkin : NetworkBehaviour
     [Header("Meshes")] public GameObject arms;
     public GameObject body;
     public WeaponPrefabList weaponPrefabList;
+    public Animator animator;
+    public Animator fpAnimator;
 
     [Header("Layers")] public String armsLayer;
     public String hiddenLayer;
@@ -148,6 +150,30 @@ public class PlayerSkin : NetworkBehaviour
         shootFX.Play();
         Invoke(nameof(TurnOffLight), 0.02f);
         recoil += recoilAmount;
+    }
+
+    [Client]
+    public void PlayReloadAnimation(float reloadDuration)
+    {
+        Debug.Log("Reloading: " + reloadDuration);
+        animator.SetFloat("oneOverReloadDuration", 1.0f/reloadDuration);
+        animator.SetBool("reloading", true);
+
+        if (isOwned)
+        {
+            fpAnimator.SetFloat("oneOverReloadDuration", 1.0f/reloadDuration);
+            fpAnimator.SetBool("reloading", true);
+        }
+    }
+
+    [Client]
+    public void FinishedReloadAnimation()
+    {
+        animator.SetBool("reloading", false);
+        if (isOwned)
+        {
+            fpAnimator.SetBool("reloading", false);
+        }
     }
 
     [Client]
