@@ -1,26 +1,21 @@
 fileFormatVersion: 2
-guid: 2aa74dd39381e4940a882ebb76557dd7
+guid: bef01ed064e7d8641910d960c4b1744e
 ModelImporter:
   serializedVersion: 22103
   internalIDToNameTable:
   - first:
-      74: -4791504522942941401
-    second: Armature|Armature|mixamo.com|Layer0
+      74: -5989579420725052391
+    second: Armature|Armature|Armature|Armature|Armature|Armature|mixamo.com|Layer0
   - first:
       74: 6759086803382991731
     second: Armature|Armature|Armature|Armature|mixamo.com|Layer0
   - first:
-      74: -5989579420725052391
-    second: Armature|Armature|Armature|Armature|Armature|Armature|mixamo.com|Layer0
-  - first:
       74: -2770135929185916639
     second: Armature|Armature|Armature|Armature|mixamo.com|Layer0.001
-  externalObjects:
   - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Material__7.001
-    second: {fileID: 2100000, guid: 3e905066a2fb3d44b895ecfb3b2b67a8, type: 2}
+      74: -4791504522942941401
+    second: Armature|Armature|mixamo.com|Layer0
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
