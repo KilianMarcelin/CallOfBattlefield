@@ -32,7 +32,9 @@ public class PlayerSkin : NetworkBehaviour
     private float health = 0;
     private WeaponBehaviour weaponBehaviour;
     private float recoil = 0;
-    private Vector3 originalAmrsPos;
+    private Vector3 originalArmsPos;
+    private Vector3 targetArmsPos;
+    private Quaternion targetArmsRot;
     private Vector2 swayOffset = Vector2.zero;
 
     private void SetGameLayerRecursive(GameObject _go, int _layer)
@@ -51,7 +53,7 @@ public class PlayerSkin : NetworkBehaviour
     private void Start()
     {
         ShowModels();
-        originalAmrsPos = arms.transform.localPosition;
+        originalArmsPos = arms.transform.localPosition;
     }
 
     [Client]
@@ -68,6 +70,28 @@ public class PlayerSkin : NetworkBehaviour
             SetGameLayerRecursive(shootFX.gameObject, LayerMask.NameToLayer("Default"));
             SetGameLayerRecursive(body.gameObject, LayerMask.NameToLayer("Default"));
             body.SetActive(true);
+        }
+    }
+
+    [Client]
+    public void ClientStartRun()
+    {
+        animator.SetLayerWeight(1, 0.0f);
+
+        if (isOwned)
+        {
+            targetArmsRot = Quaternion.Euler(0, -36, 0);
+        }
+    }
+
+    [Client]
+    public void ClientStopRun()
+    {
+        animator.SetLayerWeight(1, 1.0f);
+
+        if (isOwned)
+        {
+            targetArmsRot = Quaternion.Euler(0, 0, 0);
         }
     }
 
@@ -95,8 +119,9 @@ public class PlayerSkin : NetworkBehaviour
             swayOffset.y = Mathf.Lerp(swayOffset.y, mouseY, swayOffsetRate);
 
             recoil = Mathf.Lerp(recoil, 0, 0.1f);
-            arms.transform.localPosition = originalAmrsPos + new Vector3(swayOffset.x,
+            arms.transform.localPosition = originalArmsPos + new Vector3(swayOffset.x,
                 swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
+            arms.transform.localRotation = Quaternion.Lerp(arms.transform.localRotation, targetArmsRot, 0.1f);
         }
     }
 

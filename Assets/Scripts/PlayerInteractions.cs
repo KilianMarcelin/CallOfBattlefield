@@ -5,10 +5,11 @@ using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 
-[RequireComponent(typeof(PlayerState))]
+[RequireComponent(typeof(PlayerState), typeof(PlayerMovement))]
 public class PlayerInteractions : NetworkBehaviour
 {
     PlayerState playerState;
+    private PlayerMovement playerMovement;
 
     [FormerlySerializedAs("ignoreHit")] public LayerMask includeHit;
     public Camera mainCamera;
@@ -34,6 +35,7 @@ public class PlayerInteractions : NetworkBehaviour
     private void Start()
     {
         playerState = GetComponent<PlayerState>();
+        playerMovement = GetComponent<PlayerMovement>();
     }
 
     [ClientRpc]
@@ -70,7 +72,7 @@ public class PlayerInteractions : NetworkBehaviour
                 CmdReload();
             }
 
-            if (ammoUsed < playerState.GetCurrentWeapon().maxAmmo && !reloading && canShoot && Input.GetButton("Fire1"))
+            if (!playerMovement.isRunning && ammoUsed < playerState.GetCurrentWeapon().maxAmmo && !reloading && canShoot && Input.GetButton("Fire1"))
             {
                 Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
                 CmdShoot(ray.origin, ray.direction);

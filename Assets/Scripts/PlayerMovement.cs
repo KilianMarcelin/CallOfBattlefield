@@ -2,6 +2,7 @@
 using Mirror;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 public class PlayerMovement : NetworkBehaviour
@@ -21,6 +22,9 @@ public class PlayerMovement : NetworkBehaviour
     private float moveX = 0, moveZ = 0;
     public float velocityY = 0;
     private float animatorInputX = 0, animatorInputZ = 0;
+
+    public UnityEvent OnClientRunStarted;
+    public UnityEvent OnClientRunFinished;
 
     [Client]
     public void ClientResetPosition()
@@ -54,6 +58,19 @@ public class PlayerMovement : NetworkBehaviour
     public void CmdSetIsRunning(bool value)
     {
         isRunning = value;
+        RpcClientPlayStartStopRunAnims(value);
+    }
+    
+    public void RpcClientPlayStartStopRunAnims(bool value)
+    {
+        if (value)
+        {
+            OnClientRunStarted.Invoke();
+        }
+        else
+        {
+            OnClientRunFinished.Invoke();
+        }
     }
 
     private void Update()
