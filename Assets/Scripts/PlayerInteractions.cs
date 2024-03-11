@@ -138,6 +138,8 @@ public class PlayerInteractions : NetworkBehaviour
             // If we hit a player and it isn't us
             if (player != null && player != playerState)
             {
+                if (player.isDed) continue;
+                
                 player.ServerDamage(playerState.GetCurrentWeapon().damage);
                 // RpcPlayHitFXBlood(hit.point);
                 RpcInvokeClientBloodFX(hit.point + hit.normal * 0.1f);
