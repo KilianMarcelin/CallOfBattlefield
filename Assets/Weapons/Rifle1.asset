@@ -16,5 +16,7 @@ MonoBehaviour:
   range: 100
   fireRate: 15
   impactForce: 30
-  weaponModel: {fileID: 1063816135455577480, guid: 6423a9106e633b449a5ed0688557f3a4,
-    type: 3}
+  maxAmmo: 18
+  reloadTime: 1.2
+  weaponModelIndex: 0
+  fullAuto: 1

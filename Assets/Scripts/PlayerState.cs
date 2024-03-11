@@ -13,7 +13,6 @@ public class PlayerState : NetworkBehaviour
     [SyncVar] public int currentWeapon = 0;
 
     [SyncVar] public float timeUntilShoot = 0;
-    [SyncVar] public float timeUntilReloadEnd = 0;
     [SyncVar] private float timeUntilRespawn = 0;
 
     public UnityEvent OnDeathServerCallbacks;
@@ -161,7 +160,6 @@ public class PlayerState : NetworkBehaviour
         }
         else
         {
-            timeUntilReloadEnd -= Time.deltaTime;
             timeUntilShoot -= Time.deltaTime;
         }
     }
