@@ -15,8 +15,9 @@ public class SpiderAI : MonoBehaviour
 
     void Start()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player"); // Getting all players
         float minDist = float.MinValue;
+        // Getting nearest player
         foreach (GameObject player in players)
         {
             float dist = Vector3.Distance(player.transform.position, transform.position);
@@ -29,6 +30,7 @@ public class SpiderAI : MonoBehaviour
     }
     
     // Update is called once per frame
+    // Move towards player selected in Start, when the spider is within attackRange, it attacks the player
     void Update()
     {
         if (playerTransform)
