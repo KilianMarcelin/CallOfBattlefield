@@ -11,6 +11,22 @@ public class SpiderAI : MonoBehaviour
     public Animator animator;
     private bool inAttackRange = false;
     [SerializeField] private float attackRange = 3f;
+
+
+    void Start()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        float minDist = float.MinValue;
+        foreach (GameObject player in players)
+        {
+            float dist = Vector3.Distance(player.transform.position, transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                playerTransform = player.transform;
+            }
+        }
+    }
     
     // Update is called once per frame
     void Update()
