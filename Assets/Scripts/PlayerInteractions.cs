@@ -32,6 +32,12 @@ public class PlayerInteractions : NetworkBehaviour
         canShoot = value;
     }
 
+    [Server]
+    public void ServerResetAmmo()
+    {
+            ammoUsed = 0;
+    }
+
     private void Start()
     {
         playerState = GetComponent<PlayerState>();

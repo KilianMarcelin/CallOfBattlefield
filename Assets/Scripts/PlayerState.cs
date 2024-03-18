@@ -83,9 +83,15 @@ public class PlayerState : NetworkBehaviour
     {
         isDed = false;
         health = 100;
-        RpcRunRemote(nameof(ClientInvokeRespawnCallbacks));
+        RpcInvokeClientInvokeRespawnCallbacks();
         RpcRunClientInvokeHealthCallbacks(health);
         OnRespawnServerCallbacks.Invoke();
+    }
+    
+    [ClientRpc]
+    public void RpcInvokeClientInvokeRespawnCallbacks()
+    {
+        ClientInvokeRespawnCallbacks();
     }
     
     [Client]
@@ -103,6 +109,17 @@ public class PlayerState : NetworkBehaviour
         timeUntilRespawn = respawnTime;
         RpcRunRemote(nameof(ClientInvokeDeathCallbacks));
         OnDeathServerCallbacks.Invoke();
+    }
+    
+    [ClientRpc]
+    private void RpcRunRemote(string methodName)
+    {
+        var method = GetType().GetMethod(methodName);
+            
+        if (method != null)
+            method.Invoke(this, null);
+        else 
+            Debug.Log("Method not found: " + methodName);
     }
     
     [Client]
@@ -177,18 +194,6 @@ public class PlayerState : NetworkBehaviour
     public Weapon GetCurrentWeapon()
     {
         return weapons[currentWeapon];
-    }
-
-    [Command]
-    public void CmdRunRemote(String function)
-    {
-        Invoke(function, 0);
-    }
-    
-    [ClientRpc]
-    public void RpcRunRemote(String function)
-    {
-        Invoke(function, 0);
     }
     
     public void DebugPrint(String text)

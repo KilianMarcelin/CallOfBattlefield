@@ -23,8 +23,6 @@ public class PlayerSkin : NetworkBehaviour
 
     [Header("Animation params")] public float swayOffsetRate = 0.1f;
     public float swayStrength = 0.1f;
-    public float breathSpeed = 1.0f;
-    public float breathStrength = 0.1f;
     public float recoilAmount = 0.1f;
 
     [Header("UI")] public PlayerUI playerUI;
@@ -33,8 +31,6 @@ public class PlayerSkin : NetworkBehaviour
     private WeaponBehaviour weaponBehaviour;
     private float recoil = 0;
     private Vector3 originalArmsPos;
-    private Vector3 targetArmsPos;
-    private Quaternion targetArmsRot;
     private Vector2 swayOffset = Vector2.zero;
 
     private void SetGameLayerRecursive(GameObject _go, int _layer)
@@ -74,28 +70,6 @@ public class PlayerSkin : NetworkBehaviour
     }
 
     [Client]
-    public void ClientStartRun()
-    {
-        animator.SetLayerWeight(1, 0.0f);
-
-        if (isOwned)
-        {
-            targetArmsRot = Quaternion.Euler(0, -36, 0);
-        }
-    }
-
-    [Client]
-    public void ClientStopRun()
-    {
-        animator.SetLayerWeight(1, 1.0f);
-
-        if (isOwned)
-        {
-            targetArmsRot = Quaternion.Euler(0, 0, 0);
-        }
-    }
-
-    [Client]
     public void HideModels()
     {
         if (isOwned)
@@ -119,9 +93,11 @@ public class PlayerSkin : NetworkBehaviour
             swayOffset.y = Mathf.Lerp(swayOffset.y, mouseY, swayOffsetRate);
 
             recoil = Mathf.Lerp(recoil, 0, 0.1f);
-            arms.transform.localPosition = originalArmsPos + new Vector3(swayOffset.x,
-                swayOffset.y + Mathf.Sin(Time.time * breathSpeed) * breathStrength, -recoil) * swayStrength;
-            arms.transform.localRotation = Quaternion.Lerp(arms.transform.localRotation, targetArmsRot, 0.1f);
+            arms.transform.localPosition = originalArmsPos + new Vector3(swayOffset.x, swayOffset.y) * swayStrength + new Vector3(0, 0, -recoil);
+        }
+        else
+        {
+            
         }
     }
 
@@ -181,12 +157,12 @@ public class PlayerSkin : NetworkBehaviour
     public void PlayReloadAnimation(float reloadDuration)
     {
         Debug.Log("Reloading: " + reloadDuration);
-        animator.SetFloat("oneOverReloadDuration", 1.0f/reloadDuration);
+        animator.SetFloat("oneOverReloadDuration", 1.0f / reloadDuration);
         animator.SetBool("reloading", true);
 
         if (isOwned)
         {
-            fpAnimator.SetFloat("oneOverReloadDuration", 1.0f/reloadDuration);
+            fpAnimator.SetFloat("oneOverReloadDuration", 1.0f / reloadDuration);
             fpAnimator.SetBool("reloading", true);
         }
     }
@@ -208,7 +184,7 @@ public class PlayerSkin : NetworkBehaviour
         hitFX.transform.position = position;
         Destroy(hitFX, 1.0f);
     }
-    
+
     [Client]
     public void ClientPlayBloodFX(Vector3 position)
     {
@@ -216,7 +192,7 @@ public class PlayerSkin : NetworkBehaviour
         bloodFX.transform.position = position;
         Destroy(bloodFX, 1.0f);
     }
-    
+
     public void TurnOffLight()
     {
         shootLight.enabled = false;
