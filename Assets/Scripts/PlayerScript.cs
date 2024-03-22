@@ -1,4 +1,5 @@
 ﻿using System;
+using Aura2API;
 using Mirror;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -28,6 +29,7 @@ public class PlayerScript : NetworkBehaviour
     public float zoomed2ndCamFOV = 40.0f;
     public Camera mainCamera;
     public Camera armsCamera;
+    public Camera tPCamera;
 
     // Private camera
     private float verticalAngle = 0.0f;
@@ -36,6 +38,7 @@ public class PlayerScript : NetworkBehaviour
     public Animator fpAnimator;
     public Animator fpGlobalAnimator;
     public float fpGlobalAninmatorChangeSpeed = 0.1f;
+    public float ragdollLifetime = 60.0f;
 
     [Header("Meshes")] public GameObject arms;
     public GameObject body;
@@ -64,12 +67,15 @@ public class PlayerScript : NetworkBehaviour
     private Vector2 swayOffset = Vector2.zero;
 
     [Header("State")] public Weapon[] weapons;
+    public Grenade[] grenades;
     [SyncVar] public float respawnTime = 5;
     public WeaponBehaviour weaponBehaviour;
+    public GameObject grenadePrefab;
 
     [SyncVar] public bool isDed = false;
     [SyncVar] public float health = 100f;
     [SyncVar] public int currentWeapon = 0;
+    [SyncVar] public int currentGrenade = 0;
 
     public float timeUntilShoot = 0;
     [SyncVar] private float timeUntilRespawn = 0;
@@ -86,6 +92,10 @@ public class PlayerScript : NetworkBehaviour
         mainCamera.gameObject.tag = "MainCamera";
         mainCamera.gameObject.SetActive(true);
         Cursor.lockState = CursorLockMode.Locked;
+        if (QualitySettings.GetQualityLevel() == 0)
+        {
+            mainCamera.GetComponent<AuraCamera>().enabled = false;
+        }
     }
 
     private void SetGameLayerRecursive(GameObject _go, int _layer)
@@ -200,21 +210,22 @@ public class PlayerScript : NetworkBehaviour
         RpcResetPos();
         canMove = true;
         canShoot = true;
-        ShowModels();
+        RpcRespawn();
     }
 
     [ClientRpc]
     public void RpcResetPos()
     {
         transform.position = NetworkManager.singleton.GetStartPosition().position;
+        moveX = 0;
+        moveZ = 0;
     }
 
     [Server]
     public void ServerDie()
     {
-        if (!isServer) return;
-
-        HideModels();
+        RpcDie();
+        RpcCreateRagdoll();
         isDed = true;
         timeUntilRespawn = respawnTime;
         canMove = false;
@@ -222,9 +233,29 @@ public class PlayerScript : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcHideModels()
+    public void RpcCreateRagdoll()
+    {
+        GameObject ragdoll = Instantiate(body);
+        ragdoll.transform.position = body.transform.position;
+        ragdoll.transform.rotation = body.transform.rotation;
+        ragdoll.SetActive(true);
+        SetGameLayerRecursive(ragdoll, LayerMask.NameToLayer("Default"));
+        ragdoll.GetComponent<NetworkAnimator>().enabled = false;
+        ragdoll.GetComponent<Animator>().enabled = false;
+        ragdoll.GetComponentInChildren<Rigidbody>().isKinematic = false;
+
+        Vector3 force = transform.rotation * new Vector3(moveX / Time.deltaTime, velocityY, moveZ / Time.deltaTime) * 10.0f;
+        ragdoll.GetComponentInChildren<Rigidbody>().AddForce(force, ForceMode.VelocityChange);
+        Destroy(ragdoll, ragdollLifetime);
+    }
+
+    [ClientRpc]
+    public void RpcDie()
     {
         HideModels();
+        cr.enabled = false;
+        tPCamera.enabled = true;
+        mainCamera.enabled = false;
     }
 
     [Command]
@@ -249,6 +280,15 @@ public class PlayerScript : NetworkBehaviour
             SetGameLayerRecursive(body.gameObject, LayerMask.NameToLayer("Default"));
             body.SetActive(true);
         }
+    }
+
+    [ClientRpc]
+    public void RpcRespawn()
+    {
+        cr.enabled = true;
+        tPCamera.enabled = false;
+        mainCamera.enabled = true;
+        ShowModels();
     }
 
     [Client]
@@ -336,36 +376,6 @@ public class PlayerScript : NetworkBehaviour
             }
 
             //
-            // Camera
-            //
-            {
-                float mouseX = Input.GetAxis("Mouse X");
-                float mouseY = Input.GetAxis("Mouse Y");
-
-                verticalAngle += mouseY;
-                if (verticalAngle < -90f) verticalAngle = -90f;
-                else if (verticalAngle > 90f) verticalAngle = 90f;
-
-                animator.SetFloat("aim", verticalAngle / 90f);
-
-                // Camera rotation 2
-                mainCamera.transform.localRotation = Quaternion.AngleAxis(verticalAngle, Vector3.left);
-                transform.Rotate(0, mouseX, 0);
-                transform.Rotate(0, mouseX, 0);
-
-                if (Input.GetButton("Fire2"))
-                {
-                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, zoomRate);
-                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, zoomRate);
-                }
-                else
-                {
-                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, zoomRate);
-                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, zoomRate);
-                }
-            }
-
-            //
             // Skin
             //
             {
@@ -385,6 +395,7 @@ public class PlayerScript : NetworkBehaviour
             // Interactions
             //
             {
+                recoil = Vector2.Lerp(recoil, Vector2.zero, weapons[currentWeapon].recoilRecovery);
                 timeUntilShoot -= Time.deltaTime;
                 if (reloading)
                 {
@@ -396,7 +407,7 @@ public class PlayerScript : NetworkBehaviour
                         CmdFinishedReload();
                     }
                 }
-                
+
                 if (Input.GetButtonDown("Power word kill") && !isDed)
                 {
                     CmdKill();
@@ -415,6 +426,40 @@ public class PlayerScript : NetworkBehaviour
                     Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
                     // ClientPlayShootAnimation();
                     ClientShoot(ray.origin, ray.direction);
+                    recoil = new Vector2(
+                        weapons[currentWeapon].recoilCurve.Evaluate(recoil.y +
+                                                                    weapons[currentWeapon].recoilUp),
+                        recoil.y + weapons[currentWeapon].recoilUp);
+                }
+            }
+
+            //
+            // Camera
+            //
+            {
+                float mouseX = Input.GetAxis("Mouse X");
+                float mouseY = Input.GetAxis("Mouse Y");
+
+                verticalAngle += mouseY;
+                if (verticalAngle < -90f) verticalAngle = -90f;
+                else if (verticalAngle > 90f) verticalAngle = 90f;
+
+                animator.SetFloat("aim", verticalAngle / 90f);
+
+                // Camera rotation 2
+                mainCamera.transform.localRotation = Quaternion.AngleAxis(verticalAngle + recoil.y, Vector3.left);
+                // transform.Rotate(0, mouseX, 0);
+                transform.Rotate(0, mouseX + recoil.x, 0);
+
+                if (Input.GetButton("Fire2"))
+                {
+                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, zoomRate);
+                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, zoomRate);
+                }
+                else
+                {
+                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, zoomRate);
+                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, zoomRate);
                 }
             }
         }
@@ -532,6 +577,7 @@ public class PlayerScript : NetworkBehaviour
 
                 player.CmdDamage(weapons[currentWeapon].damage);
                 // Play for all remote client and then yourself
+                playerUI.Hit();
                 CmdPlayBloodFX(hit.point);
                 ClientPlayBloodFX(hit.point);
                 break;
@@ -541,6 +587,8 @@ public class PlayerScript : NetworkBehaviour
             if (player == null)
             {
                 // Play for all remote client and then yourself
+                // playerUI.Hit();
+
                 CmdPlayHitFX(hit.point + hit.normal * 0.1f);
                 ClientPlayHitFX(hit.point + hit.normal * 0.1f);
                 break;

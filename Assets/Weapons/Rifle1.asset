@@ -20,3 +20,38 @@ MonoBehaviour:
   reloadTime: 1.2
   weaponModelIndex: 0
   fullAuto: 1
+  recoilRecovery: 0.1
+  recoilUp: 1
+  recoilCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 6.787483
+      value: -0.017401934
+      inSlope: 0.41017282
+      outSlope: 0.41017282
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.19582365
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 0.0007214303
+      inSlope: -0.6309281
+      outSlope: -0.6309281
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33722252
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

@@ -2412,7 +2412,6 @@ GameObject:
   - component: {fileID: 1007281163}
   - component: {fileID: 1007281162}
   - component: {fileID: 1007281161}
-  - component: {fileID: 1007281164}
   - component: {fileID: 1007281165}
   m_Layer: 0
   m_Name: Main Camera
@@ -2487,18 +2486,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1007281164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1007281160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1007281165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8793,7 +8780,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 3.2e-44, y: 5.939e-41, z: 6e-44, w: 2.524355e-29}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -8878,7 +8865,7 @@ MonoBehaviour:
   color: {r: 0, g: 0.5, b: 0.5, a: 0.5}
   colorStrength: 1
   useTint: 0
-  tint: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  tint: {r: 0.999999, g: 0.9215677, b: 0.015686257, a: 1}
   tintStrength: 1
   useExtinction: 1
   extinction: 0.37199998
