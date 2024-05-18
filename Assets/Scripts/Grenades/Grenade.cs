@@ -12,5 +12,5 @@ public class Grenade : ScriptableObject
     public float reloadTime = 10f;
     public float fuseTime = 3f;
     public bool impactDetonate = true;
-    public GameObject explosionEffect;
+    public int explosionEffect;
 }

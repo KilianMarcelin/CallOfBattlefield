@@ -78,6 +78,7 @@ public class PlayerScript : NetworkBehaviour
     [SyncVar] public int currentGrenade = 0;
 
     public float timeUntilShoot = 0;
+    public float timeUntilGrenade = 0;
     [SyncVar] private float timeUntilRespawn = 0;
 
     [Header("Interactions")] public LayerMask includeHit;
@@ -310,6 +311,12 @@ public class PlayerScript : NetworkBehaviour
         canShoot = value;
     }
 
+    [Command]
+    public void CmdSetIsRunning(bool value)
+    {
+        isRunning = value;
+    }
+
     private void Update()
     {
         if (isOwned)
@@ -321,12 +328,13 @@ public class PlayerScript : NetworkBehaviour
             {
                 // Calc input values
                 bool localIsRunning = Input.GetButton("Run");
+                CmdSetIsRunning(localIsRunning);
 
                 float newInputX = Input.GetAxis("Horizontal");
                 float newInputZ = Input.GetAxis("Vertical");
 
-                inputX = Mathf.Lerp(inputX, newInputX, cr.isGrounded ? movementControl : airControl);
-                inputZ = Mathf.Lerp(inputZ, newInputZ, cr.isGrounded ? movementControl : airControl);
+                inputX = Mathf.Lerp(inputX, newInputX, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
+                inputZ = Mathf.Lerp(inputZ, newInputZ, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
 
                 // CmdUpdateWalkValue(Mathf.Sqrt(inputX*inputX + inputZ*inputZ) * (localIsRunning ? 2.0f : 1.0f));
 
@@ -348,8 +356,8 @@ public class PlayerScript : NetworkBehaviour
                 // moveZ = Mathf.Lerp(moveZ, newMoveZ, isInAir ? airControl : groundControl);
 
                 // Update the third person animator (will automatically be updated on remote clients)
-                animatorInputX = Mathf.Lerp(animatorInputX, -inputX * (localIsRunning ? 1.5f : 1.0f), movementControl);
-                animatorInputZ = Mathf.Lerp(animatorInputZ, inputZ * (localIsRunning ? 1.5f : 1.0f), movementControl);
+                animatorInputX = Mathf.Lerp(animatorInputX, -inputX * (localIsRunning ? 1.5f : 1.0f), Time.deltaTime * movementControl);
+                animatorInputZ = Mathf.Lerp(animatorInputZ, inputZ * (localIsRunning ? 1.5f : 1.0f), Time.deltaTime * movementControl);
 
                 animator.SetFloat("forward", animatorInputZ);
                 animator.SetFloat("left", animatorInputX);
@@ -382,10 +390,10 @@ public class PlayerScript : NetworkBehaviour
                 float mouseX = Input.GetAxis("Mouse X");
                 float mouseY = Input.GetAxis("Mouse Y");
 
-                swayOffset.x = Mathf.Lerp(swayOffset.x, -mouseX, swayOffsetRate);
-                swayOffset.y = Mathf.Lerp(swayOffset.y, -mouseY, swayOffsetRate);
+                swayOffset.x = Mathf.Lerp(swayOffset.x, -mouseX, Time.deltaTime * swayOffsetRate);
+                swayOffset.y = Mathf.Lerp(swayOffset.y, -mouseY, Time.deltaTime * swayOffsetRate);
 
-                recoilZ = Mathf.Lerp(recoilZ, 0, 0.1f);
+                recoilZ = Mathf.Lerp(recoilZ, 0, Time.deltaTime); // * weapons[currentWeapon].recoilRecovery);
                 arms.transform.localPosition = originalArmsPos +
                                                new Vector3(swayOffset.x, swayOffset.y) * swayStrength +
                                                new Vector3(0, 0, -recoilZ);
@@ -395,8 +403,8 @@ public class PlayerScript : NetworkBehaviour
             // Interactions
             //
             {
-                recoil = Vector2.Lerp(recoil, Vector2.zero, weapons[currentWeapon].recoilRecovery);
                 timeUntilShoot -= Time.deltaTime;
+                timeUntilGrenade -= Time.deltaTime;
                 if (reloading)
                 {
                     timeUntilReload -= Time.deltaTime;
@@ -426,10 +434,16 @@ public class PlayerScript : NetworkBehaviour
                     Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
                     // ClientPlayShootAnimation();
                     ClientShoot(ray.origin, ray.direction);
-                    recoil = new Vector2(
-                        weapons[currentWeapon].recoilCurve.Evaluate(recoil.y +
-                                                                    weapons[currentWeapon].recoilUp),
-                        recoil.y + weapons[currentWeapon].recoilUp);
+                }
+                else
+                {
+                    recoil = Vector2.Lerp(recoil, Vector2.zero, Time.deltaTime * weapons[currentWeapon].recoilRecovery);
+                }
+
+                if (Input.GetButton("Grenade") && canShoot && timeUntilGrenade <= 0)
+                {
+                    timeUntilGrenade = grenades[currentGrenade].reloadTime;
+                    CmdLaunchGrenade(mainCamera.transform.position + mainCamera.transform.forward * 1.5f, mainCamera.transform.forward * grenades[currentGrenade].throwForce);
                 }
             }
 
@@ -453,13 +467,13 @@ public class PlayerScript : NetworkBehaviour
 
                 if (Input.GetButton("Fire2"))
                 {
-                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, zoomRate);
-                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, zoomRate);
+                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, Time.deltaTime * zoomRate);
+                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, Time.deltaTime * zoomRate);
                 }
                 else
                 {
-                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, zoomRate);
-                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, zoomRate);
+                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, Time.deltaTime * zoomRate);
+                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, Time.deltaTime * zoomRate);
                 }
             }
         }
@@ -499,6 +513,18 @@ public class PlayerScript : NetworkBehaviour
         RpcFinishedReloadAnimation();
     }
 
+    [Command]
+    public void CmdLaunchGrenade(Vector3 position, Vector3 force)
+    {
+        GameObject gre = Instantiate(grenadePrefab);
+        gre.transform.position = position;
+        gre.transform.SetParent(null);
+        NetworkServer.Spawn(gre);
+        GrenadeBehaviour gb = gre.GetComponent<GrenadeBehaviour>();
+        gb.SetGrenade(grenades[currentGrenade]);
+        gb.SetForce(force);
+    }
+
     [ClientRpc]
     public void RpcPlayReloadAnimation(float reloadDuration)
     {
@@ -535,6 +561,13 @@ public class PlayerScript : NetworkBehaviour
     [Client]
     public void ClientPlayShootAnimation()
     {
+        if (isOwned)
+        {
+            recoil = new Vector2(
+                weapons[currentWeapon].recoilCurve.Evaluate(recoil.y +
+                                                            weapons[currentWeapon].recoilUp),
+                recoil.y + weapons[currentWeapon].recoilUp);
+        }
         shootLight.enabled = true;
         shootFX.transform.position = weaponBehaviour.fxSlot.transform.position;
         shootFX.time = 0.0f;
@@ -552,7 +585,12 @@ public class PlayerScript : NetworkBehaviour
     [Client]
     public void ClientShoot(Vector3 origin, Vector3 direction)
     {
-        if (!canShoot || timeUntilShoot > 0) return;
+        if (!canShoot || timeUntilShoot > 0)
+        {
+            // Normal recoil recovery (in case we're trying to shoot but can't.
+            recoil = Vector2.Lerp(recoil, Vector2.zero, Time.deltaTime * weapons[currentWeapon].recoilRecovery);
+            return;
+        }
 
         timeUntilShoot = 1 / weapons[currentWeapon].fireRate;
         ammoUsed++;

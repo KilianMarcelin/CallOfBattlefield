@@ -7640,14 +7640,14 @@ MonoBehaviour:
   runSpeed: 7
   walkSpeed: 5
   jumpHeight: 4
-  movementControl: 1
+  movementControl: 20
   airControl: 0
   canMove: 1
   isRunning: 0
   velocityY: 0
   unzoomedFOV: 90
   zoomedFOV: 30
-  zoomRate: 0.3
+  zoomRate: 10
   unzoomed2ndCamFOV: 60
   zoomed2ndCamFOV: 40
   mainCamera: {fileID: 573146033155733539}
@@ -7671,18 +7671,25 @@ MonoBehaviour:
   bloodParticleFX: {fileID: 1500974914826428251, guid: 9be59669938b0a644986a2c5e499dd35,
     type: 3}
   shootLight: {fileID: 5488862542738303513}
-  swayOffsetRate: 0.1
-  swayStrength: 0.01
+  swayOffsetRate: 5
+  swayStrength: 0.001
   recoilAmount: 0.03
   playerUI: {fileID: 7859564286094190753}
   weapons:
   - {fileID: 11400000, guid: 8d87c7cf24fbb5e45b9d1c4527a8f0f9, type: 2}
+  grenades:
+  - {fileID: 11400000, guid: 9b527a82bb7ef6b489a12f7fbe9eab4f, type: 2}
   respawnTime: 5
   weaponBehaviour: {fileID: 0}
+  grenadePrefab: {fileID: 1086382835879151589, guid: d9e03407151d6c7459822cc9cf40c1e3,
+    type: 3}
+  grenadeForce: 0
   isDed: 0
   health: 100
   currentWeapon: 0
+  currentGrenade: 0
   timeUntilShoot: 0
+  timeUntilGrenade: 0
   includeHit:
     serializedVersion: 2
     m_Bits: 385

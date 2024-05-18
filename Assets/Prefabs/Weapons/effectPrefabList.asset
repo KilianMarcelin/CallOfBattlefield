@@ -9,13 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fed8ea93f24744fa98683c48e3c9a509, type: 3}
-  m_Name: ChipiBomb
+  m_Script: {fileID: 11500000, guid: 52006d959fbf4cc28a05bb362a94e09c, type: 3}
+  m_Name: effectPrefabList
   m_EditorClassIdentifier: 
-  damage: 0
-  damageRange: 10
-  throwForce: 10
-  reloadTime: 1
-  fuseTime: 3
-  impactDetonate: 1
-  explosionEffect: 0
+  explosionEffects:
+  - {fileID: 3972858866179868304, guid: 2ee9e119e5b4b164a99bc2e6825695cb, type: 3}
