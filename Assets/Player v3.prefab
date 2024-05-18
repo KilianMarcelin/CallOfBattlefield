@@ -7683,7 +7683,6 @@ MonoBehaviour:
   weaponBehaviour: {fileID: 0}
   grenadePrefab: {fileID: 1086382835879151589, guid: d9e03407151d6c7459822cc9cf40c1e3,
     type: 3}
-  grenadeForce: 0
   isDed: 0
   health: 100
   currentWeapon: 0
@@ -9831,7 +9830,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5146048072760623102}
   - component: {fileID: 8817755170957050520}
-  - component: {fileID: 2109818789617507419}
   m_Layer: 0
   m_Name: TPCamera
   m_TagString: Untagged
@@ -9897,14 +9895,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &2109818789617507419
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7517616111233472408}
-  m_Enabled: 1
 --- !u!1 &7576244632220082969
 GameObject:
   m_ObjectHideFlags: 0

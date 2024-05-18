@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Mirror;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.PlayerLoop;
 
-public class SpiderAI : MonoBehaviour
+public class SpiderAI : NetworkBehaviour
 {
 
     public Transform playerTransform;
@@ -15,6 +16,7 @@ public class SpiderAI : MonoBehaviour
     [SerializeField] private float attackRange = 3f;
     private float cooldown = 0f;
     private float cooldownMax = 2f;
+    [SyncVar] private float life = 100.0f;
 
 
     void GetPlayers()
@@ -24,7 +26,7 @@ public class SpiderAI : MonoBehaviour
         // Getting nearest player
         foreach (GameObject player in players)
         {
-            Debug.Log(player);
+            // Debug.Log(player);
             float dist = Vector3.Distance(player.transform.position, transform.position);
             if (dist < minDist)
             {
@@ -33,11 +35,22 @@ public class SpiderAI : MonoBehaviour
             }
         }
     }
+
+    public void Damage(float damage)
+    {
+        life -= damage;
+        if (life <= 0)
+        {
+            NetworkManager.Destroy(this.gameObject);
+        }
+    }
     
     // Update is called once per frame
     // Move towards player selected in Start, when the spider is within attackRange, it attacks the player
     void Update()
     {
+        if (!isServer) return;
+        
         if (cooldown < cooldownMax) cooldown += Time.deltaTime;
         else
         {

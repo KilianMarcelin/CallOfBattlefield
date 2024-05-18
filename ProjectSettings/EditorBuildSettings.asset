@@ -12,15 +12,15 @@ EditorBuildSettings:
     path: Assets/Scenes/Map.unity
     guid: bb2bd2259b81b0e44890b772a7ec65ba
   - enabled: 1
-    path: Assets/Scenes/TestScene.unity
+    path: Assets/Scenes/Unused/TestScene.unity
     guid: ecacc14f04b72a448b1d3e2f6487aa61
   - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/Unused/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 0
     path: Assets/Scenes/Default.unity
     guid: 84d7635e61f15e54098d468e2ff15500
   - enabled: 1
-    path: Assets/Scenes/Forest Demo Scene.unity
+    path: Assets/Scenes/Unused/Forest Demo Scene.unity
     guid: 3c698a3ac77025942a8cd0682cb02889
   m_configObjects: {}

@@ -53,7 +53,6 @@ public class GrenadeBehaviour : NetworkBehaviour
     public void Explode()
     {
         exploded = true;
-        Debug.Log("Exploding");
         RpcPlayExplosion(transform.position);
         Collider[] others = Physics.OverlapSphere(transform.position, grenade.damageRange);
         
@@ -66,7 +65,13 @@ public class GrenadeBehaviour : NetworkBehaviour
             }
         }
         
-        // Destroy(this, 0.01f);
+        // Destorying instantly result in an explosion not playing
+        Invoke(nameof(Destroy), 0.01f);
+    }
+
+    [Server]
+    void Destroy()
+    {
         NetworkServer.Destroy(this.gameObject);
     }
 

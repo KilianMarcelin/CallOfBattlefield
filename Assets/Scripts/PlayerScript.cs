@@ -245,7 +245,8 @@ public class PlayerScript : NetworkBehaviour
         ragdoll.GetComponent<Animator>().enabled = false;
         ragdoll.GetComponentInChildren<Rigidbody>().isKinematic = false;
 
-        Vector3 force = transform.rotation * new Vector3(moveX / Time.deltaTime, velocityY, moveZ / Time.deltaTime) * 10.0f;
+        Vector3 force = transform.rotation * new Vector3(moveX / Time.deltaTime, velocityY, moveZ / Time.deltaTime) *
+                        10.0f;
         ragdoll.GetComponentInChildren<Rigidbody>().AddForce(force, ForceMode.VelocityChange);
         Destroy(ragdoll, ragdollLifetime);
     }
@@ -356,8 +357,10 @@ public class PlayerScript : NetworkBehaviour
                 // moveZ = Mathf.Lerp(moveZ, newMoveZ, isInAir ? airControl : groundControl);
 
                 // Update the third person animator (will automatically be updated on remote clients)
-                animatorInputX = Mathf.Lerp(animatorInputX, -inputX * (localIsRunning ? 1.5f : 1.0f), Time.deltaTime * movementControl);
-                animatorInputZ = Mathf.Lerp(animatorInputZ, inputZ * (localIsRunning ? 1.5f : 1.0f), Time.deltaTime * movementControl);
+                animatorInputX = Mathf.Lerp(animatorInputX, -inputX * (localIsRunning ? 1.5f : 1.0f),
+                    Time.deltaTime * movementControl);
+                animatorInputZ = Mathf.Lerp(animatorInputZ, inputZ * (localIsRunning ? 1.5f : 1.0f),
+                    Time.deltaTime * movementControl);
 
                 animator.SetFloat("forward", animatorInputZ);
                 animator.SetFloat("left", animatorInputX);
@@ -403,6 +406,7 @@ public class PlayerScript : NetworkBehaviour
             // Interactions
             //
             {
+                recoil = Vector2.Lerp(recoil, Vector2.zero, weapons[currentWeapon].recoilRecovery);
                 timeUntilShoot -= Time.deltaTime;
                 timeUntilGrenade -= Time.deltaTime;
                 if (reloading)
@@ -443,7 +447,8 @@ public class PlayerScript : NetworkBehaviour
                 if (Input.GetButton("Grenade") && canShoot && timeUntilGrenade <= 0)
                 {
                     timeUntilGrenade = grenades[currentGrenade].reloadTime;
-                    CmdLaunchGrenade(mainCamera.transform.position + mainCamera.transform.forward * 1.5f, mainCamera.transform.forward * grenades[currentGrenade].throwForce);
+                    CmdLaunchGrenade(mainCamera.transform.position + mainCamera.transform.forward * 1.5f,
+                        mainCamera.transform.forward * grenades[currentGrenade].throwForce);
                 }
             }
 
@@ -468,12 +473,14 @@ public class PlayerScript : NetworkBehaviour
                 if (Input.GetButton("Fire2"))
                 {
                     mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomedFOV, Time.deltaTime * zoomRate);
-                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, Time.deltaTime * zoomRate);
+                    armsCamera.fieldOfView =
+                        Mathf.Lerp(armsCamera.fieldOfView, zoomed2ndCamFOV, Time.deltaTime * zoomRate);
                 }
                 else
                 {
                     mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, unzoomedFOV, Time.deltaTime * zoomRate);
-                    armsCamera.fieldOfView = Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, Time.deltaTime * zoomRate);
+                    armsCamera.fieldOfView =
+                        Mathf.Lerp(armsCamera.fieldOfView, unzoomed2ndCamFOV, Time.deltaTime * zoomRate);
                 }
             }
         }
@@ -563,11 +570,10 @@ public class PlayerScript : NetworkBehaviour
     {
         if (isOwned)
         {
-            recoil = new Vector2(
-                weapons[currentWeapon].recoilCurve.Evaluate(recoil.y +
-                                                            weapons[currentWeapon].recoilUp),
-                recoil.y + weapons[currentWeapon].recoilUp);
+            float value = recoil.y + Time.deltaTime * weapons[currentWeapon].recoilUp;
+            recoil = new Vector2(weapons[currentWeapon].recoilCurve.Evaluate(value), value);
         }
+
         shootLight.enabled = true;
         shootFX.transform.position = weaponBehaviour.fxSlot.transform.position;
         shootFX.time = 0.0f;
@@ -585,12 +591,7 @@ public class PlayerScript : NetworkBehaviour
     [Client]
     public void ClientShoot(Vector3 origin, Vector3 direction)
     {
-        if (!canShoot || timeUntilShoot > 0)
-        {
-            // Normal recoil recovery (in case we're trying to shoot but can't.
-            recoil = Vector2.Lerp(recoil, Vector2.zero, Time.deltaTime * weapons[currentWeapon].recoilRecovery);
-            return;
-        }
+        if (!canShoot || timeUntilShoot > 0) return;
 
         timeUntilShoot = 1 / weapons[currentWeapon].fireRate;
         ammoUsed++;
@@ -606,7 +607,9 @@ public class PlayerScript : NetworkBehaviour
 
         foreach (RaycastHit hit in hits)
         {
+            // We SHOULD use a life script but we never got the time to do it so that'll do
             PlayerScript player = GetPlayerScriptInParent(hit.transform);
+            SpiderAI spider = GetSpiderAIScriptInParent(hit.transform);
 
             // If we hit a player and it isn't us
             if (player != null && player != this)
@@ -614,6 +617,17 @@ public class PlayerScript : NetworkBehaviour
                 if (player.isDed) continue;
 
                 player.CmdDamage(weapons[currentWeapon].damage);
+                // Play for all remote client and then yourself
+                playerUI.Hit();
+                CmdPlayBloodFX(hit.point);
+                ClientPlayBloodFX(hit.point);
+                break;
+            } 
+            
+            if (spider != null)
+            {
+                spider.Damage(weapons[currentWeapon].damage);
+
                 // Play for all remote client and then yourself
                 playerUI.Hit();
                 CmdPlayBloodFX(hit.point);
@@ -686,6 +700,7 @@ public class PlayerScript : NetworkBehaviour
         Destroy(bloodFX, 1.0f);
     }
 
+    // No time to do proper life management
     private PlayerScript GetPlayerScriptInParent(Transform go)
     {
         if (go == null) return null;
@@ -695,5 +710,16 @@ public class PlayerScript : NetworkBehaviour
         if (ps != null) return ps;
 
         return GetPlayerScriptInParent(go.transform.parent);
+    }
+    
+    private SpiderAI GetSpiderAIScriptInParent(Transform go)
+    {
+        if (go == null) return null;
+
+        SpiderAI ps = go.GetComponent<SpiderAI>();
+
+        if (ps != null) return ps;
+
+        return GetSpiderAIScriptInParent(go.transform.parent);
     }
 }

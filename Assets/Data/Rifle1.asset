@@ -20,8 +20,8 @@ MonoBehaviour:
   reloadTime: 1.2
   weaponModelIndex: 0
   fullAuto: 1
-  recoilRecovery: 2
-  recoilUp: 1
+  recoilRecovery: 0.1
+  recoilUp: 80
   recoilCurve:
     serializedVersion: 2
     m_Curve:
