@@ -17,6 +17,8 @@ public class SpiderAI : NetworkBehaviour
     private float cooldown = 0f;
     private float cooldownMax = 2f;
     [SyncVar] private float life = 100.0f;
+    public float attackCooldown = 0.0f;
+    public float timeBetweenAttack = 1.0f;
 
 
     void GetPlayers()
@@ -36,6 +38,11 @@ public class SpiderAI : NetworkBehaviour
         }
     }
 
+    /*
+     * NOTE : Damage and spider lifetime was done really late in development
+     * the code is not clean, could be much better, but it works. 
+     */
+    
     public void Damage(float damage)
     {
         life -= damage;
@@ -50,6 +57,8 @@ public class SpiderAI : NetworkBehaviour
     void Update()
     {
         if (!isServer) return;
+
+        attackCooldown -= Time.deltaTime;
         
         if (cooldown < cooldownMax) cooldown += Time.deltaTime;
         else
@@ -67,10 +76,17 @@ public class SpiderAI : NetworkBehaviour
                 animator.SetBool("walking", true);
                 animator.SetBool("attack", false);
             }
+            // We are close enough for attacks
             else
             {
                 animator.SetBool("walking", false);
                 animator.SetBool("attack", true);
+
+                if (attackCooldown <= 0)
+                {
+                    playerTransform.GetComponent<PlayerScript>().ServerDamage(10.0f);
+                    attackCooldown = timeBetweenAttack;
+                }
             }
 
         }
