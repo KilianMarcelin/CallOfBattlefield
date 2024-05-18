@@ -7,6 +7,7 @@ using UnityEngine;
 public class Options : MonoBehaviour
 {
     [SerializeField] private TMP_Dropdown dropdownQuality;
+    [SerializeField] private GameObject toActive;
 
     public void SetQuality(int i)
     {
@@ -17,5 +18,13 @@ public class Options : MonoBehaviour
     {
         int qualityLevel = QualitySettings.GetQualityLevel();
         dropdownQuality.value = qualityLevel;
+    }
+
+    private void Update()
+    {
+        if (Input.GetButtonDown("Cancel"))
+        {
+            if(toActive) toActive.SetActive(!toActive.activeSelf);
+        }
     }
 }
