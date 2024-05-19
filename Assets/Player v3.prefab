@@ -5444,6 +5444,7 @@ GameObject:
   - component: {fileID: 7506528689763268855}
   - component: {fileID: 3800143060321032647}
   - component: {fileID: 7859564286094190753}
+  - component: {fileID: 1161428073893429517}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -5526,7 +5527,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4319515969476099950}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
@@ -5535,7 +5536,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
 --- !u!114 &7859564286094190753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5552,6 +5553,18 @@ MonoBehaviour:
   hitmarker: {fileID: 3183346753006095967}
   animSpeed: 2
   hitmarkerDecay: 0.4
+--- !u!225 &1161428073893429517
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4319515969476099950}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &4348717797709504810
 GameObject:
   m_ObjectHideFlags: 0

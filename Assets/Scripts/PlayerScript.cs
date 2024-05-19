@@ -12,6 +12,7 @@ public class PlayerScript : NetworkBehaviour
     public float jumpHeight = 4f;
     public float movementControl = 0.1f;
     public float airControl = 0.02f;
+    public bool canLook = true;
     [SyncVar] public bool canMove = true;
     [SyncVar] public bool isRunning = false;
 
@@ -88,6 +89,7 @@ public class PlayerScript : NetworkBehaviour
     public bool reloading = false;
     public Vector2 recoil;
 
+    // Starting on client that controls the player
     public override void OnStartAuthority()
     {
         mainCamera.gameObject.tag = "MainCamera";
@@ -99,6 +101,7 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // Helper
     private void SetGameLayerRecursive(GameObject _go, int _layer)
     {
         _go.layer = _layer;
@@ -112,6 +115,7 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // Global start
     private void Start()
     {
         ShowModels();
@@ -147,6 +151,7 @@ public class PlayerScript : NetworkBehaviour
         ChangeWeaponSkin(weapons[weaponIndex]);
     }
 
+    // Visual
     [Client]
     public void ChangeWeaponSkin(Weapon w)
     {
@@ -195,6 +200,7 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // Callback from server to client when health is changed
     [ClientRpc]
     public void RpcHealthChanged(float health)
     {
@@ -214,6 +220,8 @@ public class PlayerScript : NetworkBehaviour
         RpcRespawn();
     }
 
+    // The client controls the position, so we need to reset the position from the client,
+    // hence the server -> client rpc function
     [ClientRpc]
     public void RpcResetPos()
     {
@@ -320,15 +328,7 @@ public class PlayerScript : NetworkBehaviour
 
     private void Update()
     {
-        if (Input.GetButtonDown("Cancel") && !isDed)
-        {
-            canMove = !canMove;
-            canShoot = !canShoot;
-            if(!canMove) Cursor.lockState = CursorLockMode.None;
-            else  Cursor.lockState = CursorLockMode.Locked;
-        }
-
-        if (isOwned)
+        if (isOwned && !Options.isPaused)
         {
             //
             // Movement

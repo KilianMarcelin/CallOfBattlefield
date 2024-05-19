@@ -9,6 +9,8 @@ public class Options : MonoBehaviour
     [SerializeField] private TMP_Dropdown dropdownQuality;
     [SerializeField] private GameObject toActive;
 
+    public static bool isPaused = false;
+
     public void SetQuality(int i)
     {
         QualitySettings.SetQualityLevel(i, true);
@@ -20,11 +22,31 @@ public class Options : MonoBehaviour
         dropdownQuality.value = qualityLevel;
     }
 
+    public void Pause()
+    {
+        isPaused = true;
+        toActive.SetActive(isPaused);
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void Unpause()
+    {
+        isPaused = false;
+        toActive.SetActive(isPaused);
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    public void Toggle()
+    {
+        if (isPaused) Unpause();
+        else Pause();
+    }
+
     private void Update()
     {
         if (Input.GetButtonDown("Cancel"))
         {
-            if(toActive) toActive.SetActive(!toActive.activeSelf);
+            Toggle();
         }
     }
 }
