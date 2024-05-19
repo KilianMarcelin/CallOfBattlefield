@@ -320,6 +320,14 @@ public class PlayerScript : NetworkBehaviour
 
     private void Update()
     {
+        if (Input.GetButtonDown("Cancel") && !isDed)
+        {
+            canMove = !canMove;
+            canShoot = !canShoot;
+            if(!canMove) Cursor.lockState = CursorLockMode.None;
+            else  Cursor.lockState = CursorLockMode.Locked;
+        }
+
         if (isOwned)
         {
             //

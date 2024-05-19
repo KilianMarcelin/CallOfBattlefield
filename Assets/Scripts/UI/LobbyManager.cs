@@ -10,6 +10,11 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private NetworkManager _networkManager;
     [SerializeField] private TMP_InputField ipField;
 
+    public void changeScene(string map)
+    {
+        _networkManager.onlineScene = map;
+    }
+    
     // Joining a hosted game
     public void join() 
     {
