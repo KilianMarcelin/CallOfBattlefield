@@ -16920,7 +16920,7 @@ MonoBehaviour:
       scale: {x: 1, y: 1, z: 1}
   noiseMask:
     enable: 1
-    speed: 0.2
+    speed: 0.1
     transform:
       space: 0
       position: {x: 0, y: 0, z: 0}
@@ -16928,14 +16928,14 @@ MonoBehaviour:
       scale: {x: 3, y: 3, z: 3}
   densityInjection:
     enable: 1
-    strength: 0.05
+    strength: 0.5
     useNoiseMask: 1
     useNoiseMaskLevels: 1
     noiseMaskLevelParameters:
       levelLowThreshold: 0
-      levelHiThreshold: 1
+      levelHiThreshold: 0.5892857
       outputLowValue: 0
-      outputHiValue: 1
+      outputHiValue: 0.34
       contrast: 5
       saturateOutputValues: 0
     useTexture2DMask: 1
@@ -17082,8 +17082,8 @@ MonoBehaviour:
       saturateOutputValues: 0
   boostInjection:
     enable: 0
-    strength: 1.89
-    useNoiseMask: 1
+    strength: 8.25
+    useNoiseMask: 0
     useNoiseMaskLevels: 1
     noiseMaskLevelParameters:
       levelLowThreshold: 0
@@ -24498,32 +24498,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1207270758}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1210889845
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59306422a2ca4454aabce3daa79c3334, type: 3}
-  m_Name: New Aura Base Settings
-  m_EditorClassIdentifier: 
-  useDensity: 1
-  density: 0.1
-  useScattering: 0
-  scattering: 0
-  useAmbientLighting: 1
-  ambientLightingStrength: 2
-  useColor: 0
-  color: {r: 0, g: 0.5, b: 0.5, a: 0.5}
-  colorStrength: 1
-  useTint: 0
-  tint: {r: 0.999999, g: 0.9215677, b: 0.015686257, a: 1}
-  tintStrength: 1
-  useExtinction: 1
-  extinction: 0.3
 --- !u!1001 &1215708798
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26378,7 +26352,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   frustumSettings:
-    baseSettings: {fileID: 1210889845}
+    baseSettings: {fileID: 11400000, guid: e9211f514b37874468ea1df507e9f0ac, type: 2}
     qualitySettings: {fileID: 775617070}
 --- !u!114 &1320829331
 MonoBehaviour:
@@ -26434,8 +26408,8 @@ MonoBehaviour:
       colorBlindnessType: 0
       colorBlindnessStrength: 1
   m_Resources: {fileID: 11400000, guid: d82512f9c8e5d4a4d938b575d47f88d4, type: 2}
-  m_ShowToolkit: 0
-  m_ShowCustomSorter: 0
+  m_ShowToolkit: 1
+  m_ShowCustomSorter: 1
   breakBeforeColorGrading: 0
   m_BeforeTransparentBundles: []
   m_BeforeStackBundles: []
