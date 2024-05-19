@@ -76,6 +76,9 @@ public class PlayerScript : NetworkBehaviour
     [SyncVar] public float respawnTime = 5;
     public WeaponBehaviour weaponBehaviour;
     public GameObject grenadePrefab;
+    public float timeBeforeHeal = 3.0f;
+    public float healRate = 50.0f;
+    private float remainingUntilHeal = 0.0f;
 
     [SyncVar] public bool isDed = false;
     [SyncVar] public float health = 100f;
@@ -198,6 +201,9 @@ public class PlayerScript : NetworkBehaviour
         health -= damage;
         // We need a rpc cause our Rpc call function can't take parameters.
         RpcHealthChanged(health);
+
+        if (Mathf.Sign(damage) > 0) remainingUntilHeal = timeBeforeHeal;
+        
         if (health <= 0)
         {
             ServerDie();
@@ -445,6 +451,13 @@ public class PlayerScript : NetworkBehaviour
                         reloading = false;
                         CmdFinishedReload();
                     }
+                }
+
+                remainingUntilHeal -= Time.deltaTime;
+                
+                if (remainingUntilHeal <= 0 && health < 100.0f)
+                {
+                    CmdDamage(-healRate * Time.deltaTime);
                 }
 
                 if (!Options.isPaused && Input.GetButtonDown("Power word kill") && !isDed)
