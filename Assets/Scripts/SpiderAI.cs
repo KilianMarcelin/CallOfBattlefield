@@ -42,7 +42,7 @@ public class SpiderAI : NetworkBehaviour
      * NOTE : Damage and spider lifetime was done really late in development
      * the code is not clean, could be much better, but it works. 
      */
-    
+    [Server]
     public void Damage(float damage)
     {
         life -= damage;
@@ -50,6 +50,12 @@ public class SpiderAI : NetworkBehaviour
         {
             NetworkManager.Destroy(this.gameObject);
         }
+    }
+    
+    [Command(requiresAuthority = false)]
+    public void CmdDamage(float damage)
+    {
+        Damage(damage);
     }
     
     // Update is called once per frame

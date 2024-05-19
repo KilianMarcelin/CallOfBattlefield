@@ -9,10 +9,13 @@ using UnityEngine;
 public class GrenadeBehaviour : NetworkBehaviour
 {
     public EffectPrefabList effects;
+    [SyncVar]
     public Grenade grenade;
-
+    
+    [SyncVar]
     private bool exploded = false;
-
+    
+    [SyncVar]
     private float timer = 0;
     
     [Server]
@@ -80,7 +83,6 @@ public class GrenadeBehaviour : NetworkBehaviour
     {
         Debug.Log("Explode!");
         GameObject fx = Instantiate(effects.explosionEffects[grenade.explosionEffect]);
-        fx.transform.SetParent(null);
         fx.transform.position = pos;
     }
 }

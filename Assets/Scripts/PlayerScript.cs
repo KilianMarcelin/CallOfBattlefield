@@ -41,6 +41,10 @@ public class PlayerScript : NetworkBehaviour
     public float fpGlobalAninmatorChangeSpeed = 0.1f;
     public float ragdollLifetime = 60.0f;
 
+    [Header("Sound")] public AudioSource source;
+    public AudioClip reloadSound;
+    public AudioClip shootSound;
+
     [Header("Meshes")] public GameObject arms;
     public GameObject body;
     public WeaponPrefabList weaponPrefabList;
@@ -239,6 +243,8 @@ public class PlayerScript : NetworkBehaviour
         timeUntilRespawn = respawnTime;
         canMove = false;
         canShoot = false;
+        health = 100.0f;
+        RpcHealthChanged(health);
     }
 
     [ClientRpc]
@@ -328,7 +334,7 @@ public class PlayerScript : NetworkBehaviour
 
     private void Update()
     {
-        if (isOwned && !Options.isPaused)
+        if (isOwned)
         {
             //
             // Movement
@@ -341,6 +347,12 @@ public class PlayerScript : NetworkBehaviour
 
                 float newInputX = Input.GetAxis("Horizontal");
                 float newInputZ = Input.GetAxis("Vertical");
+
+                if (Options.isPaused)
+                {
+                    newInputX = 0.0f;
+                    newInputZ = 0.0f;
+                }
 
                 inputX = Mathf.Lerp(inputX, newInputX, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
                 inputZ = Mathf.Lerp(inputZ, newInputZ, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
@@ -400,6 +412,13 @@ public class PlayerScript : NetworkBehaviour
             {
                 float mouseX = Input.GetAxis("Mouse X");
                 float mouseY = Input.GetAxis("Mouse Y");
+                
+                if (Options.isPaused)
+                {
+                    mouseX = 0.0f;
+                    mouseY = 0.0f;
+                }
+
 
                 swayOffset.x = Mathf.Lerp(swayOffset.x, -mouseX, Time.deltaTime * swayOffsetRate);
                 swayOffset.y = Mathf.Lerp(swayOffset.y, -mouseY, Time.deltaTime * swayOffsetRate);
@@ -428,19 +447,19 @@ public class PlayerScript : NetworkBehaviour
                     }
                 }
 
-                if (Input.GetButtonDown("Power word kill") && !isDed)
+                if (!Options.isPaused && Input.GetButtonDown("Power word kill") && !isDed)
                 {
                     CmdKill();
                 }
 
-                if (Input.GetButtonDown("Reload") && !isDed && !reloading && ammoUsed > 0)
+                if (!Options.isPaused && Input.GetButtonDown("Reload") && !isDed && !reloading && ammoUsed > 0)
                 {
                     timeUntilReload = weapons[currentWeapon].reloadTime;
                     reloading = true;
                     CmdReload();
                 }
 
-                if (Input.GetButton("Fire1") && !isRunning && ammoUsed < weapons[currentWeapon].maxAmmo && !reloading &&
+                if (!Options.isPaused && Input.GetButton("Fire1") && !isRunning && ammoUsed < weapons[currentWeapon].maxAmmo && !reloading &&
                     canShoot)
                 {
                     Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
@@ -452,7 +471,7 @@ public class PlayerScript : NetworkBehaviour
                     recoil = Vector2.Lerp(recoil, Vector2.zero, Time.deltaTime * weapons[currentWeapon].recoilRecovery);
                 }
 
-                if (Input.GetButton("Grenade") && canShoot && timeUntilGrenade <= 0)
+                if (!Options.isPaused && Input.GetButton("Grenade") && canShoot && timeUntilGrenade <= 0)
                 {
                     timeUntilGrenade = grenades[currentGrenade].reloadTime;
                     CmdLaunchGrenade(mainCamera.transform.position + mainCamera.transform.forward * 1.5f,
@@ -463,7 +482,7 @@ public class PlayerScript : NetworkBehaviour
             //
             // Camera
             //
-            {
+            if (!Options.isPaused) {
                 float mouseX = Input.GetAxis("Mouse X");
                 float mouseY = Input.GetAxis("Mouse Y");
 
@@ -532,9 +551,8 @@ public class PlayerScript : NetworkBehaviour
     public void CmdLaunchGrenade(Vector3 position, Vector3 force)
     {
         GameObject gre = Instantiate(grenadePrefab);
-        gre.transform.position = position;
-        gre.transform.SetParent(null);
         NetworkServer.Spawn(gre);
+        gre.transform.position = position;
         GrenadeBehaviour gb = gre.GetComponent<GrenadeBehaviour>();
         gb.SetGrenade(grenades[currentGrenade]);
         gb.SetForce(force);
@@ -552,6 +570,8 @@ public class PlayerScript : NetworkBehaviour
             fpAnimator.SetFloat("oneOverReloadDuration", 1.0f / reloadDuration);
             fpAnimator.SetBool("reloading", true);
         }
+
+        source.PlayOneShot(reloadSound);
     }
 
     [ClientRpc]
@@ -565,6 +585,9 @@ public class PlayerScript : NetworkBehaviour
         shootFX.Play();
         Invoke(nameof(TurnOffLight), 0.02f);
         recoilZ += recoilAmount;
+
+        // Sound
+        source.PlayOneShot(shootSound);
     }
 
     [Command]
@@ -588,6 +611,8 @@ public class PlayerScript : NetworkBehaviour
         shootFX.Play();
         Invoke(nameof(TurnOffLight), 0.02f);
         recoilZ += recoilAmount;
+
+        source.PlayOneShot(shootSound);
     }
 
     // Needed for coroutine
@@ -630,11 +655,11 @@ public class PlayerScript : NetworkBehaviour
                 CmdPlayBloodFX(hit.point);
                 ClientPlayBloodFX(hit.point);
                 break;
-            } 
-            
+            }
+
             if (spider != null)
             {
-                spider.Damage(weapons[currentWeapon].damage);
+                spider.CmdDamage(weapons[currentWeapon].damage);
 
                 // Play for all remote client and then yourself
                 playerUI.Hit();
@@ -719,7 +744,7 @@ public class PlayerScript : NetworkBehaviour
 
         return GetPlayerScriptInParent(go.transform.parent);
     }
-    
+
     private SpiderAI GetSpiderAIScriptInParent(Transform go)
     {
         if (go == null) return null;

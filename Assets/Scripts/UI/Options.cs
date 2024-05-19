@@ -9,6 +9,7 @@ public class Options : MonoBehaviour
     [SerializeField] private TMP_Dropdown dropdownQuality;
     [SerializeField] private GameObject toActive;
 
+    // Hacky fix
     public static bool isPaused = false;
 
     public void SetQuality(int i)

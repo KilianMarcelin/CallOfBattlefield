@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.21631655, g: 0.14951056, b: 0.12696798, a: 1}
+  m_IndirectSpecularColor: {r: 0.21619223, g: 0.14943443, b: 0.12692663, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1784,11 +1784,11 @@ MonoBehaviour:
   runInBackground: 1
   headlessStartMode: 1
   editorAutoStart: 0
-  sendRate: 128
+  sendRate: 64
   autoStartServerBuild: 0
   autoConnectClientBuild: 0
   offlineScene: Assets/Scenes/Menu.unity
-  onlineScene: Assets/Scenes/Map.unity
+  onlineScene: 
   transport: {fileID: 0}
   networkAddress: localhost
   maxConnections: 100
@@ -1799,7 +1799,11 @@ MonoBehaviour:
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 1086382835879151589, guid: d9e03407151d6c7459822cc9cf40c1e3, type: 3}
+  - {fileID: 8739433427542866543, guid: 3c718842867415b4cab51940df89af16, type: 3}
+  - {fileID: 5035268038999075910, guid: 4c3c65eddd643ef4db585515138a2bfb, type: 3}
+  - {fileID: 2275459853793491602, guid: 9952dfa0a8c7fe7479f7b5a26d7a747b, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -1923,7 +1927,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 1
           m_FloatArgument: 0
-          m_StringArgument: Map
+          m_StringArgument: GothicEsir
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 398121806}
