@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 949914679}
-  m_IndirectSpecularColor: {r: 0.21625839, g: 0.14945443, b: 0.12689945, a: 1}
+  m_IndirectSpecularColor: {r: 0.21633865, g: 0.14951259, b: 0.12695923, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -6382,7 +6382,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.3
   m_Range: 50
   m_SpotAngle: 59
   m_InnerSpotAngle: 21.80208
@@ -16118,7 +16118,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.3
   m_Range: 50
   m_SpotAngle: 59
   m_InnerSpotAngle: 21.80208
@@ -19522,7 +19522,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 7e-45, y: 7.374e-41, z: 1.02e-43, w: 3.4e-44}
+  m_BoundingSphereOverride: {x: 3.8e-44, y: 1.42236e-40, z: 6e-44, w: 2.524355e-29}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -22954,7 +22954,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.3
   m_Range: 50
   m_SpotAngle: 59
   m_InnerSpotAngle: 21.80208
@@ -25187,7 +25187,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.3
   m_Range: 50
   m_SpotAngle: 59
   m_InnerSpotAngle: 21.80208
@@ -25546,7 +25546,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.3
   m_Range: 50
   m_SpotAngle: 59
   m_InnerSpotAngle: 21.80208
@@ -27066,7 +27066,7 @@ Light:
   m_Type: 0
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.3
   m_Range: 50
   m_SpotAngle: 59
   m_InnerSpotAngle: 21.80208
@@ -27565,7 +27565,7 @@ PrefabInstance:
     - target: {fileID: 3755509830059454578, guid: 6cc551b26cb4f294fb146c0058b7ac97,
         type: 3}
       propertyPath: m_Intensity
-      value: 8
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 3755509830059454578, guid: 6cc551b26cb4f294fb146c0058b7ac97,
         type: 3}
@@ -34183,7 +34183,7 @@ PrefabInstance:
     - target: {fileID: 2448335560025829799, guid: 5a40b96b708c96941851705683ab3ce5,
         type: 3}
       propertyPath: m_Intensity
-      value: 4
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 7791554159208388475, guid: 5a40b96b708c96941851705683ab3ce5,
         type: 3}
@@ -38192,7 +38192,7 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 0.8235294, g: 0.54289466, b: 0.4602076, a: 1}
-  m_Intensity: 4
+  m_Intensity: 1.5
   m_Range: 3
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
