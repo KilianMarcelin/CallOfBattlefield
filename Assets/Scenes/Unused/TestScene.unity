@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -795,8 +795,8 @@ MonoBehaviour:
   sendRate: 128
   autoStartServerBuild: 0
   autoConnectClientBuild: 0
-  offlineScene: 
-  onlineScene: 
+  offlineScene: Assets/Scenes/Unused/TestScene.unity
+  onlineScene: Assets/Scenes/Unused/TestScene.unity
   transport: {fileID: 480645032}
   networkAddress: localhost
   maxConnections: 100
@@ -807,7 +807,11 @@ MonoBehaviour:
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 1086382835879151589, guid: d9e03407151d6c7459822cc9cf40c1e3, type: 3}
+  - {fileID: 8739433427542866543, guid: 3c718842867415b4cab51940df89af16, type: 3}
+  - {fileID: 5035268038999075910, guid: 4c3c65eddd643ef4db585515138a2bfb, type: 3}
+  - {fileID: 2275459853793491602, guid: 9952dfa0a8c7fe7479f7b5a26d7a747b, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -1321,3 +1325,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2041292807 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: eecdfbd8513bc7e49934e23dcb21ce6e,
+    type: 3}
+  m_PrefabInstance: {fileID: 94802294}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2041292810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041292807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d7bf8059ee7af747b476e261253b624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 0}
+  clip: {fileID: 0}

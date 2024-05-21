@@ -7823,6 +7823,8 @@ MonoBehaviour:
   weaponBehaviour: {fileID: 0}
   grenadePrefab: {fileID: 1086382835879151589, guid: d9e03407151d6c7459822cc9cf40c1e3,
     type: 3}
+  timeBeforeHeal: 3
+  healRate: 50
   isDed: 0
   health: 100
   currentWeapon: 0
@@ -9262,6 +9264,7 @@ GameObject:
   - component: {fileID: 6080793584665069147}
   - component: {fileID: 6046620097527705825}
   - component: {fileID: 2071174569232355734}
+  - component: {fileID: 2094844804846512130}
   m_Layer: 0
   m_Name: orc_prefab
   m_TagString: Untagged
@@ -9323,6 +9326,20 @@ MonoBehaviour:
   syncInterval: 0
   clientAuthority: 1
   animator: {fileID: 6046620097527705825}
+--- !u!114 &2094844804846512130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6856872409876651233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d7bf8059ee7af747b476e261253b624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 1889844013262641065}
+  clip: {fileID: 8300000, guid: 33688137bb5c14618b7d7d0d585e359f, type: 3}
 --- !u!1 &6950487840489135205
 GameObject:
   m_ObjectHideFlags: 0

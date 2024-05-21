@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+ * This might be the worst code I've ever written
+ */
+
+
+using System;
 using Aura2API;
 using Mirror;
 using UnityEngine;
@@ -18,7 +23,6 @@ public class PlayerScript : NetworkBehaviour
 
     // Private movement
     private float inputX = 0, inputZ = 0;
-    private float moveX = 0, moveZ = 0;
     public float velocityY = 0;
     private float animatorInputX = 0, animatorInputZ = 0;
     private float fpGlobalAnimatorInput = 0;
@@ -125,16 +129,19 @@ public class PlayerScript : NetworkBehaviour
     // Global start
     private void Start()
     {
+        // Models are shown depending on wether you are owner or client
         ShowModels();
+        // Helper
         originalArmsPos = arms.transform.localPosition;
 
+        // If on server, we respawn and reset weapon
         if (isServer)
         {
             ServerRespawn();
             ServerChangeWeapon();
         }
 
-        // Fix for other players not being started, thus resulting in a crash
+        // Fix for other players not being started correctly, thus resulting in a crash
         PlayerScript[] playerStates = FindObjectsOfType<PlayerScript>();
         foreach (PlayerScript playerState in playerStates)
         {
@@ -152,13 +159,13 @@ public class PlayerScript : NetworkBehaviour
         RpcChangeWeapon(weaponIndex);
     }
 
+    // Callback to all clients
     [ClientRpc]
     public void RpcChangeWeapon(int weaponIndex)
     {
         ChangeWeaponSkin(weapons[weaponIndex]);
     }
-
-    // Visual
+    
     [Client]
     public void ChangeWeaponSkin(Weapon w)
     {
@@ -176,6 +183,7 @@ public class PlayerScript : NetworkBehaviour
 
         // Add new weapon
         GameObject weapon = Instantiate(weaponPrefabList.weaponPrefabs[w.weaponModelIndex]);
+        // Weapon is placed differently if you're the owner (fp), to avoid duplicating models
         if (!isOwned)
         {
             weapon.transform.SetParent(gunSlotTP.transform);
@@ -203,7 +211,7 @@ public class PlayerScript : NetworkBehaviour
         RpcHealthChanged(health);
 
         if (Mathf.Sign(damage) > 0) remainingUntilHeal = timeBeforeHeal;
-        
+
         if (health <= 0)
         {
             ServerDie();
@@ -236,8 +244,6 @@ public class PlayerScript : NetworkBehaviour
     public void RpcResetPos()
     {
         transform.position = NetworkManager.singleton.GetStartPosition().position;
-        moveX = 0;
-        moveZ = 0;
     }
 
     [Server]
@@ -253,6 +259,8 @@ public class PlayerScript : NetworkBehaviour
         RpcHealthChanged(health);
     }
 
+    // Called on the server when someone dies, will duplicate the body and 
+    // make it ragdoll on all clients
     [ClientRpc]
     public void RpcCreateRagdoll()
     {
@@ -265,12 +273,12 @@ public class PlayerScript : NetworkBehaviour
         ragdoll.GetComponent<Animator>().enabled = false;
         ragdoll.GetComponentInChildren<Rigidbody>().isKinematic = false;
 
-        Vector3 force = transform.rotation * new Vector3(moveX / Time.deltaTime, velocityY, moveZ / Time.deltaTime) *
-                        10.0f;
+        Vector3 force = cr.velocity * 10.0f;
         ragdoll.GetComponentInChildren<Rigidbody>().AddForce(force, ForceMode.VelocityChange);
         Destroy(ragdoll, ragdollLifetime);
     }
 
+    // Callback from the server to the clients when someone dies
     [ClientRpc]
     public void RpcDie()
     {
@@ -287,6 +295,7 @@ public class PlayerScript : NetworkBehaviour
         ServerDamage(1000000f);
     }
 
+    // Client side, show models based on ownership
     [Client]
     public void ShowModels()
     {
@@ -304,12 +313,20 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // When the server respawn a player, he needs to do some stuff
     [ClientRpc]
     public void RpcRespawn()
     {
         cr.enabled = true;
-        tPCamera.enabled = false;
-        mainCamera.enabled = true;
+
+        // Should not pose problem but just in case, so 
+        // other player dont get their cameras changed
+        if (isOwned)
+        {
+            tPCamera.enabled = false;
+            mainCamera.enabled = true;
+        }
+
         ShowModels();
     }
 
@@ -326,18 +343,27 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // The servers controls a lot of the values of the player control,
+    // to avoid cheating (unecessary but meh)
+    // They need to be able to update themselves tho, so we create
+    // Commands that are sent to the server
     [Command]
     public void CmdSetCanShoot(bool value)
     {
         canShoot = value;
     }
 
+    // The servers controls a lot of the values of the player control,
+    // to avoid cheating (unecessary but meh)
+    // They need to be able to update themselves tho, so we create
+    // Commands that are sent to the server
     [Command]
     public void CmdSetIsRunning(bool value)
     {
         isRunning = value;
     }
 
+    // Here we go
     private void Update()
     {
         if (isOwned)
@@ -351,17 +377,17 @@ public class PlayerScript : NetworkBehaviour
                 bool localIsRunning = Input.GetButton("Run");
                 CmdSetIsRunning(localIsRunning);
 
-                float newInputX = Input.GetAxis("Horizontal");
-                float newInputZ = Input.GetAxis("Vertical");
+                inputX = Input.GetAxis("Horizontal");
+                inputZ = Input.GetAxis("Vertical");
 
                 if (Options.isPaused)
                 {
-                    newInputX = 0.0f;
-                    newInputZ = 0.0f;
+                    inputX = 0.0f;
+                    inputZ = 0.0f;
                 }
 
-                inputX = Mathf.Lerp(inputX, newInputX, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
-                inputZ = Mathf.Lerp(inputZ, newInputZ, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
+                // inputX = Mathf.Lerp(inputX, newInputX, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
+                // inputZ = Mathf.Lerp(inputZ, newInputZ, Time.deltaTime * (cr.isGrounded ? movementControl : airControl));
 
                 // CmdUpdateWalkValue(Mathf.Sqrt(inputX*inputX + inputZ*inputZ) * (localIsRunning ? 2.0f : 1.0f));
 
@@ -375,9 +401,12 @@ public class PlayerScript : NetworkBehaviour
 
                 fpGlobalAnimator.SetFloat("speed", fpGlobalAnimatorInput);
 
-                // Calc movement values
-                moveX = inputX * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed);
-                moveZ = inputZ * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed);
+                // Calc movement values, local space
+                Vector3 move = new Vector3(
+                    inputX * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed),
+                    0,
+                    inputZ * Time.deltaTime * (localIsRunning ? runSpeed : walkSpeed)
+                );
 
                 // moveX = Mathf.Lerp(moveX, newMoveX, isInAir ? airControl : groundControl);
                 // moveZ = Mathf.Lerp(moveZ, newMoveZ, isInAir ? airControl : groundControl);
@@ -407,18 +436,23 @@ public class PlayerScript : NetworkBehaviour
                 }
 
                 // Apply movement
-                Vector3 movement = new Vector3(moveX, velocityY * Time.deltaTime, moveZ);
-                movement = transform.rotation * movement;
+                Vector3 movement = transform.rotation * move + Vector3.up * velocityY * Time.deltaTime;
                 cr.Move(movement);
+            }
+            // Fix for footsteps plyaing after death
+            else
+            {
+                animator.SetFloat("forward", 0);
+                animator.SetFloat("left", 0);
             }
 
             //
-            // Skin
+            // Appearance, just so the player see sway when he moves, recoil, etc
             //
             {
                 float mouseX = Input.GetAxis("Mouse X");
                 float mouseY = Input.GetAxis("Mouse Y");
-                
+
                 if (Options.isPaused)
                 {
                     mouseX = 0.0f;
@@ -436,7 +470,7 @@ public class PlayerScript : NetworkBehaviour
             }
 
             //
-            // Interactions
+            // Interactions (shoot, etc)
             //
             {
                 recoil = Vector2.Lerp(recoil, Vector2.zero, weapons[currentWeapon].recoilRecovery);
@@ -454,12 +488,14 @@ public class PlayerScript : NetworkBehaviour
                 }
 
                 remainingUntilHeal -= Time.deltaTime;
-                
+
                 if (remainingUntilHeal <= 0 && health < 100.0f)
                 {
+                    // Damage can actually heal if the value is negative, wow
                     CmdDamage(-healRate * Time.deltaTime);
                 }
 
+                // Duh
                 if (!Options.isPaused && Input.GetButtonDown("Power word kill") && !isDed)
                 {
                     CmdKill();
@@ -471,8 +507,10 @@ public class PlayerScript : NetworkBehaviour
                     reloading = true;
                     CmdReload();
                 }
-
-                if (!Options.isPaused && Input.GetButton("Fire1") && !isRunning && ammoUsed < weapons[currentWeapon].maxAmmo && !reloading &&
+                
+                // We do some check client side so that your gun doens't shoot weirdly
+                if (!Options.isPaused && Input.GetButton("Fire1") && !isRunning &&
+                    ammoUsed < weapons[currentWeapon].maxAmmo && !reloading &&
                     canShoot)
                 {
                     Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
@@ -495,7 +533,8 @@ public class PlayerScript : NetworkBehaviour
             //
             // Camera
             //
-            if (!Options.isPaused) {
+            if (!Options.isPaused)
+            {
                 float mouseX = Input.GetAxis("Mouse X");
                 float mouseY = Input.GetAxis("Mouse Y");
 
@@ -525,6 +564,7 @@ public class PlayerScript : NetworkBehaviour
             }
         }
 
+        // Server only
         if (isServer)
         {
             if (isDed)
@@ -537,7 +577,9 @@ public class PlayerScript : NetworkBehaviour
             }
         }
     }
-
+    
+    // Called on clients to stop the reload animation (realised halfway through writing this comment 
+    // that it's done automatically by the animation, but I don't have time to fix this)
     [ClientRpc]
     public void RpcFinishedReloadAnimation()
     {
@@ -548,29 +590,23 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // To tell other clients to start the reload animation
+    // see RpcFinishedReloadAnimation
     [Command]
     public void CmdReload()
     {
         RpcPlayReloadAnimation(weapons[currentWeapon].reloadTime);
     }
 
+    // To tell other clients to end the reload animation
+    // see RpcFinishedReloadAnimation
     [Command]
     public void CmdFinishedReload()
     {
         RpcFinishedReloadAnimation();
     }
 
-    [Command]
-    public void CmdLaunchGrenade(Vector3 position, Vector3 force)
-    {
-        GameObject gre = Instantiate(grenadePrefab);
-        NetworkServer.Spawn(gre);
-        gre.transform.position = position;
-        GrenadeBehaviour gb = gre.GetComponent<GrenadeBehaviour>();
-        gb.SetGrenade(grenades[currentGrenade]);
-        gb.SetForce(force);
-    }
-
+    // see RpcFinishedReloadAnimation
     [ClientRpc]
     public void RpcPlayReloadAnimation(float reloadDuration)
     {
@@ -587,6 +623,19 @@ public class PlayerScript : NetworkBehaviour
         source.PlayOneShot(reloadSound);
     }
 
+    // Owner to server
+    [Command]
+    public void CmdLaunchGrenade(Vector3 position, Vector3 force)
+    {
+        GameObject gre = Instantiate(grenadePrefab);
+        NetworkServer.Spawn(gre);
+        gre.transform.position = position;
+        GrenadeBehaviour gb = gre.GetComponent<GrenadeBehaviour>();
+        gb.SetGrenade(grenades[currentGrenade]);
+        gb.SetForce(force);
+    }
+
+    // Same thing as relaod
     [ClientRpc]
     public void RpcPlayShootAnimation()
     {
@@ -602,7 +651,7 @@ public class PlayerScript : NetworkBehaviour
         // Sound
         source.PlayOneShot(shootSound);
     }
-
+    
     [Command]
     public void CmdPlayRemoteShootAnim()
     {
@@ -634,8 +683,10 @@ public class PlayerScript : NetworkBehaviour
         shootLight.enabled = false;
     }
 
+    // Yes, shooting is done client side to avoid weird behaviours
+    // Yes, why did I try to make it impossible to cheat if the function to shoot is client side
     [Client]
-    public void ClientShoot(Vector3 origin, Vector3 direction)
+    private void ClientShoot(Vector3 origin, Vector3 direction)
     {
         if (!canShoot || timeUntilShoot > 0) return;
 
@@ -670,6 +721,7 @@ public class PlayerScript : NetworkBehaviour
                 break;
             }
 
+            // If we hit a ennemy
             if (spider != null)
             {
                 spider.CmdDamage(weapons[currentWeapon].damage);
@@ -681,7 +733,7 @@ public class PlayerScript : NetworkBehaviour
                 break;
             }
 
-            // If we didn't hit a player
+            // If we didn't hit a player or an ennemy
             if (player == null)
             {
                 // Play for all remote client and then yourself
@@ -696,18 +748,23 @@ public class PlayerScript : NetworkBehaviour
         }
     }
 
+    // Requires no authority because other scripts will call this
+    // This is client to server
     [Command(requiresAuthority = false)]
     public void CmdDamage(float damage)
     {
         ServerDamage(damage);
     }
 
+    // Tell other clients to play a hit FX (sparks)
+    // Client to server
     [Command]
     public void CmdPlayHitFX(Vector3 position)
     {
         RpcPlayHitFX(position);
     }
 
+    // Same thing, but server to client
     [ClientRpc]
     public void RpcPlayHitFX(Vector3 position)
     {
@@ -746,7 +803,7 @@ public class PlayerScript : NetworkBehaviour
         Destroy(bloodFX, 1.0f);
     }
 
-    // No time to do proper life management
+    // Lazy
     private PlayerScript GetPlayerScriptInParent(Transform go)
     {
         if (go == null) return null;
