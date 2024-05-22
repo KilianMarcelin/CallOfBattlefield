@@ -67,6 +67,11 @@ public class GrenadeBehaviour : NetworkBehaviour
             {
                 ps.ServerDamage(grenade.damage);
             }
+            SpiderAI ai;
+            if (col.TryGetComponent(out ai))
+            {
+                ai.Damage(grenade.damage);
+            }
         }
         
         // Destorying instantly result in an explosion not playing

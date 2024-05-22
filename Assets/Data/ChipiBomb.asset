@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ChipiBomb
   m_EditorClassIdentifier: 
   damage: 50
-  damageRange: 10
-  throwForce: 10
+  damageRange: 3
+  throwForce: 20
   reloadTime: 1
   fuseTime: 3
   impactDetonate: 1

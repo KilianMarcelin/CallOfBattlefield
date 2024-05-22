@@ -7833,7 +7833,7 @@ MonoBehaviour:
   timeUntilGrenade: 0
   includeHit:
     serializedVersion: 2
-    m_Bits: 385
+    m_Bits: 897
   canShoot: 1
   ammoUsed: 0
   timeUntilReload: 0
