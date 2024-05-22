@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fed8ea93f24744fa98683c48e3c9a509, type: 3}
   m_Name: ChipiBomb
   m_EditorClassIdentifier: 
-  damage: 0
+  damage: 50
   damageRange: 10
   throwForce: 10
   reloadTime: 1

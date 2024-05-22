@@ -57,6 +57,7 @@ public class GrenadeBehaviour : NetworkBehaviour
     {
         exploded = true;
         RpcPlayExplosion(transform.position);
+        
         Collider[] others = Physics.OverlapSphere(transform.position, grenade.damageRange);
         
         foreach (Collider col in others)
@@ -69,7 +70,7 @@ public class GrenadeBehaviour : NetworkBehaviour
         }
         
         // Destorying instantly result in an explosion not playing
-        Invoke(nameof(Destroy), 0.01f);
+        Invoke(nameof(Destroy), .5f);
     }
 
     [Server]

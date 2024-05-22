@@ -21,7 +21,7 @@ MonoBehaviour:
   weaponModelIndex: 0
   fullAuto: 1
   recoilRecovery: 0.1
-  recoilUp: 80
+  recoilUp: 0.6
   recoilCurve:
     serializedVersion: 2
     m_Curve:

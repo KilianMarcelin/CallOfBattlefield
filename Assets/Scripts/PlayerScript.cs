@@ -67,7 +67,8 @@ public class PlayerScript : NetworkBehaviour
     [Header("Animation params")] public float swayOffsetRate = 0.1f;
     public float swayStrength = 0.1f;
     public float recoilAmount = 0.1f;
-
+    private Vector2 dampVelocity;
+    
     [Header("UI")] public PlayerUI playerUI;
 
     // Animation private
@@ -473,7 +474,6 @@ public class PlayerScript : NetworkBehaviour
             // Interactions (shoot, etc)
             //
             {
-                recoil = Vector2.Lerp(recoil, Vector2.zero, weapons[currentWeapon].recoilRecovery);
                 timeUntilShoot -= Time.deltaTime;
                 timeUntilGrenade -= Time.deltaTime;
                 if (reloading)
@@ -519,7 +519,9 @@ public class PlayerScript : NetworkBehaviour
                 }
                 else
                 {
-                    recoil = Vector2.Lerp(recoil, Vector2.zero, Time.deltaTime * weapons[currentWeapon].recoilRecovery);
+                    // recoil = Vector2.Lerp(recoil, Vector2.zero, Time.deltaTime * weapons[currentWeapon].recoilRecovery);
+                    recoil = Vector2.SmoothDamp(recoil, Vector2.zero, ref dampVelocity,
+                        weapons[currentWeapon].recoilRecovery);
                 }
 
                 if (!Options.isPaused && Input.GetButton("Grenade") && canShoot && timeUntilGrenade <= 0)
@@ -663,8 +665,9 @@ public class PlayerScript : NetworkBehaviour
     {
         if (isOwned)
         {
-            float value = recoil.y + Time.deltaTime * weapons[currentWeapon].recoilUp;
+            float value = recoil.y + /* Time.deltaTime **/ weapons[currentWeapon].recoilUp;
             recoil = new Vector2(weapons[currentWeapon].recoilCurve.Evaluate(value), value);
+            dampVelocity = Vector2.zero;
         }
 
         shootLight.enabled = true;
