@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 using UnityEngine.PlayerLoop;
 
 public class SpiderAI : NetworkBehaviour
@@ -19,6 +20,8 @@ public class SpiderAI : NetworkBehaviour
     [SyncVar] private float life = 100.0f;
     public float attackCooldown = 0.0f;
     public float timeBetweenAttack = 1.0f;
+    public float attackDamage = 20.0f;
+    public UnityEvent<SpiderAI, PlayerScript> clientAttackCallback; 
 
 
     void GetPlayers()
@@ -90,7 +93,7 @@ public class SpiderAI : NetworkBehaviour
 
                 if (attackCooldown <= 0)
                 {
-                    playerTransform.GetComponent<PlayerScript>().ServerDamage(10.0f);
+                    Attack();
                     attackCooldown = timeBetweenAttack;
                 }
             }
@@ -103,4 +106,17 @@ public class SpiderAI : NetworkBehaviour
         }
     }
 
+    [Server]
+    public void Attack()
+    {
+        var player = playerTransform.GetComponent<PlayerScript>();
+        player.ServerDamage(attackDamage);
+        RpcClientCallbacks(this, player);
+    }
+
+    [ClientRpc]
+    public void RpcClientCallbacks(SpiderAI ai, PlayerScript player)
+    {
+        clientAttackCallback.Invoke(ai, player);
+    }
 }
