@@ -12,6 +12,7 @@ public class LobbyManager : MonoBehaviour
 
     public void changeScene(string map)
     {
+        Debug.Log("Changing scene: " + map);
         _networkManager.onlineScene = map;
     }
     
