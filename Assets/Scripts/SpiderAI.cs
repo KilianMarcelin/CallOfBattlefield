@@ -82,12 +82,14 @@ public class SpiderAI : NetworkBehaviour
             if (Vector3.Distance(playerTransform.position, transform.position) > attackRange)
             {
                 agent.SetDestination(playerTransform.position);
+                agent.isStopped = false;
                 animator.SetBool("walking", true);
                 animator.SetBool("attack", false);
             }
             // We are close enough for attacks
             else
             {
+                agent.isStopped = true;
                 animator.SetBool("walking", false);
                 animator.SetBool("attack", true);
 

@@ -471,10 +471,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f0cf6abaac292a4597d4580ea2d6f08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   playerTransform: {fileID: 0}
   agent: {fileID: 2019762275529296043}
   animator: {fileID: 1393133457554650149}
-  attackRange: 3
+  attackRange: 2
+  attackCooldown: 0
+  timeBetweenAttack: 1
+  attackDamage: 10
+  clientAttackCallback:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2486266917157627641
 GameObject:
   m_ObjectHideFlags: 0
